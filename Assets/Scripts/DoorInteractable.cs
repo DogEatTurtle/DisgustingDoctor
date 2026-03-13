@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class DoorInteractable : MonoBehaviour
 {
-    [Header("Destino desta porta")]
     public LocationType currentLocation;
+    public TransitionUIManager transitionUIManager;
+
+    public void Interact()
+    {
+        if (transitionUIManager != null)
+        {
+            transitionUIManager.OpenTransitionUI(currentLocation);
+        }
+    }
 }

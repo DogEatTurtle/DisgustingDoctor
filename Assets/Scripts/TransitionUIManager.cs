@@ -3,18 +3,23 @@ using UnityEngine;
 public class TransitionUIManager : MonoBehaviour
 {
     [Header("UI")]
-    public GameObject transitionPanel;
+    [SerializeField] private GameObject transitionPanel;
+
+    [SerializeField] private GameObject btnConsultorio;
+    [SerializeField] private GameObject btnLaboratorio;
+    [SerializeField] private GameObject btnMercadoNegro;
 
     [Header("Player")]
-    public Transform player;
+    [SerializeField] private Transform player;
+    [SerializeField] private FPSController fpsController;
+    [SerializeField] private CharacterController characterController;
 
-    [Header("Spawners")]
-    public Transform spawnConsultorio;
-    public Transform spawnLaboratorio;
-    public Transform spawnMercadoNegro;
+    [Header("Spawn Points")]
+    [SerializeField] private Transform spawnConsultorio;
+    [SerializeField] private Transform spawnLaboratorio;
+    [SerializeField] private Transform spawnMercadoNegro;
 
     private LocationType currentLocation;
-    private bool isUIOpen = false;
 
     void Start()
     {
@@ -24,75 +29,65 @@ public class TransitionUIManager : MonoBehaviour
     public void OpenTransitionUI(LocationType location)
     {
         currentLocation = location;
+
         transitionPanel.SetActive(true);
-        isUIOpen = true;
+
+        // esconder botão do local atual
+        if (btnConsultorio != null)
+            btnConsultorio.SetActive(location != LocationType.Consultorio);
+
+        if (btnLaboratorio != null)
+            btnLaboratorio.SetActive(location != LocationType.Laboratorio);
+
+        if (btnMercadoNegro != null)
+            btnMercadoNegro.SetActive(location != LocationType.MercadoNegro);
+
+        // bloquear controlo do jogador
+        if (fpsController != null)
+            fpsController.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-        Time.timeScale = 0f;
     }
 
     public void CloseTransitionUI()
     {
         transitionPanel.SetActive(false);
-        isUIOpen = false;
+
+        if (fpsController != null)
+            fpsController.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        Time.timeScale = 1f;
     }
 
     public void GoToConsultorio()
     {
-        TeleportTo(LocationType.Consultorio);
+        TeleportTo(spawnConsultorio);
     }
 
     public void GoToLaboratorio()
     {
-        TeleportTo(LocationType.Laboratorio);
+        TeleportTo(spawnLaboratorio);
     }
 
     public void GoToMercadoNegro()
     {
-        TeleportTo(LocationType.MercadoNegro);
+        TeleportTo(spawnMercadoNegro);
     }
 
-    private void TeleportTo(LocationType targetLocation)
+    private void TeleportTo(Transform targetSpawn)
     {
-        Transform targetSpawn = null;
+        if (targetSpawn == null) return;
 
-        switch (targetLocation)
-        {
-            case LocationType.Consultorio:
-                targetSpawn = spawnConsultorio;
-                break;
-            case LocationType.Laboratorio:
-                targetSpawn = spawnLaboratorio;
-                break;
-            case LocationType.MercadoNegro:
-                targetSpawn = spawnMercadoNegro;
-                break;
-        }
+        if (characterController != null)
+            characterController.enabled = false;
 
-        if (targetSpawn != null)
-        {
-            CharacterController cc = player.GetComponent<CharacterController>();
+        player.position = targetSpawn.position;
+        player.rotation = targetSpawn.rotation;
 
-            if (cc != null)
-            {
-                cc.enabled = false;
-                player.position = targetSpawn.position;
-                player.rotation = targetSpawn.rotation;
-                cc.enabled = true;
-            }
-            else
-            {
-                player.position = targetSpawn.position;
-                player.rotation = targetSpawn.rotation;
-            }
-        }
+        if (characterController != null)
+            characterController.enabled = true;
 
         CloseTransitionUI();
     }
