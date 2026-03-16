@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: UrinaryInfection
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Lower urinary tract infection
+  type: Bacterial
+  description: A bacterial infection of the bladder. Patients usually report burning
+    or pain when urinating, frequent or urgent urination, and lower abdominal discomfort.
+    Fever is typically absent or mild. Antibiotics are the standard treatment.
+  mainSymptoms:
+  - Burning when urinating
+  - Urinary urgency/frequency
+  - Lower abdominal discomfort
+  - Low or no fever
+  typicalProgression: Localized urinary symptoms.
+  recommendedTreatment: Antibiotics.
+  patientFriendlyFacts:
+  - It burns when I pee.
+  - I need to pee all the time.
+  - Only a little comes out.
+  - My lower belly feels uncomfortable.
+  - "I don\u2019t really have a high fever."

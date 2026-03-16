@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: Depression
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Mild depression
+  type: Psychological
+  description: A psychological condition characterized by a gradual decline in mood
+    and motivation. Patients may report persistent low mood, fatigue, reduced interest
+    or drive, and sleep changes. Symptoms tend to build over time. Supportive counseling
+    and follow-up are important.
+  mainSymptoms:
+  - Persistent low mood
+  - Fatigue
+  - Loss of motivation
+  - Sleep disturbance
+  typicalProgression: Gradual onset over weeks.
+  recommendedTreatment: Counseling and follow-up.
+  patientFriendlyFacts:
+  - I feel down most days.
+  - "I\u2019m tired all the time."
+  - "I don\u2019t feel like doing anything."
+  - My sleep is off.
+  - "It\u2019s been building up slowly."

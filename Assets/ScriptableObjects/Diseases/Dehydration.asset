@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: Dehydration
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Dehydration
+  type: Non-infectious
+  description: A non-infectious condition caused by insufficient fluid intake or
+    excessive fluid loss. Patients may feel dizzy, weak, and have dry mouth, with
+    reduced urine output. If not corrected, symptoms can worsen. Fluid replacement
+    is the main treatment.
+  mainSymptoms:
+  - Dizziness
+  - Dry mouth
+  - Weakness
+  - Reduced urine output
+  typicalProgression: Progressive if fluids not replaced.
+  recommendedTreatment: Fluid replacement.
+  patientFriendlyFacts:
+  - My mouth feels very dry.
+  - I feel dizzy when I stand up.
+  - I feel weak.
+  - "I haven\u2019t been peeing much."
+  - "I haven\u2019t been drinking enough."

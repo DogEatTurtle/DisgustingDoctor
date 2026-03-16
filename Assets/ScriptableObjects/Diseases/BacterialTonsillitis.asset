@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: BacterialTonsillitis
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Bacterial tonsillitis
+  type: Bacterial
+  description: A bacterial infection of the tonsils and throat. It often causes a
+    severe sore throat, fever, and difficulty swallowing, and it commonly occurs
+    without a cough. Symptoms can develop fairly quickly. Antibiotics are usually
+    needed.
+  mainSymptoms:
+  - Severe sore throat
+  - Fever
+  - Difficulty swallowing
+  - No cough
+  typicalProgression: Relatively rapid onset; throat-focused.
+  recommendedTreatment: Antibiotics.
+  patientFriendlyFacts:
+  - My throat hurts a lot.
+  - Swallowing is really painful.
+  - I have a fever.
+  - "I\u2019m not really coughing."
+  - It came on pretty fast.

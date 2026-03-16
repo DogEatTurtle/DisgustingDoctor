@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: FoodPoisoning
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Food poisoning
+  type: Non-infectious
+  description: A non-infectious illness typically linked to contaminated food. Symptoms
+    often begin suddenly and include vomiting, diarrhea, and abdominal pain, usually
+    without fever. Most cases improve with time, hydration, and observation, but
+    dehydration can be a concern.
+  mainSymptoms:
+  - Sudden vomiting
+  - Diarrhea
+  - Abdominal pain
+  - No fever
+  typicalProgression: Sudden onset after a meal; improves with time.
+  recommendedTreatment: Hydration and observation.
+  patientFriendlyFacts:
+  - It started suddenly.
+  - "I\u2019ve been vomiting."
+  - "I\u2019ve had diarrhea."
+  - My stomach hurts.
+  - I ate something suspicious recently.

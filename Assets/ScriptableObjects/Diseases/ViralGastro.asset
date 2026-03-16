@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc3a0d5aee7524047b3a288c7aab55b1, type: 3}
+  m_Name: ViralGastro
+  m_EditorClassIdentifier: Assembly-CSharp::DiseaseSO
+  diseaseName: Viral gastroenteritis
+  type: Viral
+  description: A viral infection of the stomach and intestines. It commonly causes
+    nausea, vomiting, diarrhea, and crampy abdominal pain. Onset is often rapid and
+    most patients recover within a short time. The main risk is dehydration, so fluids
+    are key.
+  mainSymptoms:
+  - Nausea
+  - Vomiting
+  - Diarrhea
+  - Abdominal pain
+  typicalProgression: Rapid onset; short duration; dehydration risk.
+  recommendedTreatment: Oral hydration.
+  patientFriendlyFacts:
+  - I feel sick to my stomach.
+  - "I\u2019ve been vomiting."
+  - "I\u2019ve had diarrhea."
+  - My stomach cramps.
+  - It started pretty quickly.

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9897d01b14275764f810235a1fe2eeb5, type: 3}
+  m_Name: Resilient
+  m_EditorClassIdentifier: Assembly-CSharp::PersonalityTraitSO
+  traitName: Resilient
+  category: 1
+  description: Has a high tolerance for discomfort and tends to endure symptoms without
+    complaining.
+  llmHint: "Downplay pain and discomfort. \r\nAct as if symptoms are manageable even
+    when they may be significant."
