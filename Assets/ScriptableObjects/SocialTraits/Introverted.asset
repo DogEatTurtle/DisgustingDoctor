@@ -18,3 +18,5 @@ MonoBehaviour:
     unnecessary explanations and emotional exposure.
   llmHint: "Speak briefly and avoid volunteering too much information. \nRespond
     in short sentences and only elaborate when asked directly."
+  infectionRiskMultiplier: 0.9
+  doctorVisitChanceMultiplier: 0.8

@@ -16,3 +16,5 @@ MonoBehaviour:
   category: 1
   description: Avoids effort and may exaggerate discomfort if it helps avoid responsibilities.
   llmHint: May exaggerate discomfort or symptoms if it helps avoid effort or responsibilities.
+  infectionRiskMultiplier: 0.9
+  doctorVisitChanceMultiplier: 1.1

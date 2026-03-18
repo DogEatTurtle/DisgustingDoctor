@@ -17,3 +17,5 @@ MonoBehaviour:
   description: Tends to trust others easily and shares information without hesitation.
   llmHint: "Be open and trusting. \r\nAnswer questions honestly and without hesitation,
     assuming the doctor has good intentions."
+  infectionRiskMultiplier: 1
+  doctorVisitChanceMultiplier: 1.2

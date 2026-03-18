@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0277adc3ae318f45adf1cfd58beacbb, type: 3}
+  m_Script: {fileID: 11500000, guid: ab3172f89460fbb45a93dace520bf709, type: 3}
   m_Name: Over-sharer
   m_EditorClassIdentifier: Assembly-CSharp::PersonalitySO
   profileName: Talkative / High Extraversion

@@ -18,3 +18,5 @@ MonoBehaviour:
     complaining.
   llmHint: "Downplay pain and discomfort. \r\nAct as if symptoms are manageable even
     when they may be significant."
+  infectionRiskMultiplier: 1
+  doctorVisitChanceMultiplier: 0.7

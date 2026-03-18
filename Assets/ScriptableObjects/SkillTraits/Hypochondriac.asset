@@ -19,3 +19,5 @@ MonoBehaviour:
 
     Express
     worry and concern about symptoms.'
+  infectionRiskMultiplier: 1
+  doctorVisitChanceMultiplier: 1.4

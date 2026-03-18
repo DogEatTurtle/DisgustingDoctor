@@ -18,3 +18,5 @@ MonoBehaviour:
     not be directly relevant.
   llmHint: Occasionally include gossip or social details about other villagers while
     answering questions.
+  infectionRiskMultiplier: 1.1
+  doctorVisitChanceMultiplier: 1

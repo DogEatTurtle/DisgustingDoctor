@@ -18,3 +18,5 @@ MonoBehaviour:
     feeling safe.
   llmHint: "Be cautious when answering questions. \r\nDo not reveal everything immediately
     and show mild suspicion toward the doctor's intentions."
+  infectionRiskMultiplier: 1
+  doctorVisitChanceMultiplier: 0.7

@@ -18,3 +18,5 @@ MonoBehaviour:
     more information than necessary.
   llmHint: "Speak openly and comfortably. \r\nExpand on answers and provide extra
     details even when they are not strictly necessary."
+  infectionRiskMultiplier: 1.2
+  doctorVisitChanceMultiplier: 1.1

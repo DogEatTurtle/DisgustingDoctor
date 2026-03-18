@@ -20,3 +20,5 @@ MonoBehaviour:
 
     Provide structured
     and precise explanations.'
+  infectionRiskMultiplier: 0.9
+  doctorVisitChanceMultiplier: 1.1

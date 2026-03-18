@@ -20,3 +20,5 @@ MonoBehaviour:
 
     Speak
     in a disciplined and practical manner.'
+  infectionRiskMultiplier: 1.1
+  doctorVisitChanceMultiplier: 0.8

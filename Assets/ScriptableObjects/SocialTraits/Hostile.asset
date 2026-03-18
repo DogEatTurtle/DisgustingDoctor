@@ -18,3 +18,5 @@ MonoBehaviour:
     or pressured.
   llmHint: "Answer in a defensive or irritated tone. \r\nShow impatience or mild
     hostility during the conversation."
+  infectionRiskMultiplier: 1
+  doctorVisitChanceMultiplier: 0.8

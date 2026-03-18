@@ -17,3 +17,5 @@ MonoBehaviour:
   description: Often mixes up details or explains things in a disorganized way.
   llmHint: Mix up details occasionally and describe symptoms in a somewhat disorganized
     or confusing way.
+  infectionRiskMultiplier: 1.2
+  doctorVisitChanceMultiplier: 1
