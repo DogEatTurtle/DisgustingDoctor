@@ -15,9 +15,6 @@ public class NPCInitializer : MonoBehaviour
     [Header("Available Skill Traits")]
     [SerializeField] private List<PersonalityTraitSO> skillTraits = new();
 
-    [Header("Available Diseases")]
-    [SerializeField] private List<DiseaseSO> diseases = new();
-
     [Header("Temporary Name Pool")]
     [SerializeField]
     private List<string> possibleNames = new()
@@ -38,7 +35,7 @@ public class NPCInitializer : MonoBehaviour
     [SerializeField] private int minAge = 18;
     [SerializeField] private int maxAge = 80;
 
-    void Start()
+    private void Awake()
     {
         AssignRandomDataToAllNPCs();
     }
@@ -52,9 +49,9 @@ public class NPCInitializer : MonoBehaviour
             return;
         }
 
-        if (basePersonalities.Count == 0 || socialTraits.Count == 0 || skillTraits.Count == 0 || diseases.Count == 0)
+        if (basePersonalities.Count == 0 || socialTraits.Count == 0 || skillTraits.Count == 0)
         {
-            Debug.LogWarning("One or more data lists are empty.");
+            Debug.LogWarning("One or more personality/trait lists are empty.");
             return;
         }
 
@@ -70,19 +67,22 @@ public class NPCInitializer : MonoBehaviour
             PersonalitySO randomPersonality = basePersonalities[Random.Range(0, basePersonalities.Count)];
             PersonalityTraitSO randomSocialTrait = socialTraits[Random.Range(0, socialTraits.Count)];
             PersonalityTraitSO randomSkillTrait = skillTraits[Random.Range(0, skillTraits.Count)];
-            DiseaseSO randomDisease = diseases[Random.Range(0, diseases.Count)];
 
             npc.AssignRandomData(
                 randomName,
                 randomAge,
                 randomPersonality,
                 randomSocialTrait,
-                randomSkillTrait,
-                randomDisease
+                randomSkillTrait
+            );
+
+            Debug.Log(
+                $"NPC Initialized -> Name: {npc.npcName} | Age: {npc.age} | " +
+                $"Base Personality: {(npc.basePersonality ? npc.basePersonality.name : "None")} | " +
+                $"Social Trait: {(npc.socialTrait ? npc.socialTrait.traitName : "None")} | " +
+                $"Skill Trait: {(npc.skillTrait ? npc.skillTrait.traitName : "None")}"
             );
         }
-
-        Debug.Log("Random NPC data assigned.");
     }
 
     private string GetRandomName(List<string> availableNames)

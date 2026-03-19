@@ -1126,7 +1126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -1718,7 +1718,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5695444783871990051, guid: bc0242a6871a47d4fa0bdf0314de26e1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.6822774
+      value: -15.61
       objectReference: {fileID: 0}
     - target: {fileID: 5695444783871990051, guid: bc0242a6871a47d4fa0bdf0314de26e1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2985,7 +2985,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8085521314298745426, guid: be8c7aadd0dc7f247b09a6bc4ce6b4c2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.6964876
+      value: -12.231235
       objectReference: {fileID: 0}
     - target: {fileID: 8085521314298745426, guid: be8c7aadd0dc7f247b09a6bc4ce6b4c2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3084,7 +3084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -3774,6 +3774,42 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 590445689}
   m_CullTransparentMesh: 1
+--- !u!1 &591409219
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 591409220}
+  m_Layer: 0
+  m_Name: SpawnsPacientes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &591409220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591409219}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1684966255}
+  - {fileID: 1947390693}
+  - {fileID: 1172904528}
+  - {fileID: 2078304074}
+  - {fileID: 1307760366}
+  m_Father: {fileID: 1275119845}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &597112990
 GameObject:
   m_ObjectHideFlags: 0
@@ -4177,7 +4213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3379364793604896463, guid: ed492426a6a85f144b87582aebfe1d6d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.1421592
+      value: -10.7855625
       objectReference: {fileID: 0}
     - target: {fileID: 3379364793604896463, guid: ed492426a6a85f144b87582aebfe1d6d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5167,7 +5203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -5443,7 +5479,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -5694,7 +5730,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -7221,6 +7257,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1054002085}
   - component: {fileID: 1054002086}
+  - component: {fileID: 1054002087}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -7262,6 +7299,39 @@ MonoBehaviour:
   fpsController: {fileID: 1485733404}
   consultorioSpawn: {fileID: 988682396}
   currentDay: 1
+  dailySystem: {fileID: 1054002087}
+  clinicPatientPlacer: {fileID: 1362626072}
+--- !u!114 &1054002087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054002084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 113d0e742e6d3cd4890bd1a11903e28f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DailySystem
+  npcs:
+  - {fileID: 131736134}
+  - {fileID: 115657706}
+  - {fileID: 400425084}
+  - {fileID: 1973597740}
+  - {fileID: 1980692023}
+  diseases:
+  - {fileID: 11400000, guid: 906983526c557d34e8e74ac4cc1bb53c, type: 2}
+  - {fileID: 11400000, guid: cfef2674e295a9143a3dca442028796c, type: 2}
+  - {fileID: 11400000, guid: a9aad6dfc2ffa1a479a76a0feb8a4690, type: 2}
+  - {fileID: 11400000, guid: b142933be2b2b8941908a2e7e69d39ec, type: 2}
+  - {fileID: 11400000, guid: 8d4dcb672a45de44691f40cc42b289ab, type: 2}
+  - {fileID: 11400000, guid: 82275c36de852244385e0f31d7621520, type: 2}
+  - {fileID: 11400000, guid: bf90972863d65b943bf5be3f3cac8f52, type: 2}
+  - {fileID: 11400000, guid: eca312bbf342b9546a19e9897234fac8, type: 2}
+  - {fileID: 11400000, guid: f47c9b24899429f4f97ef401ef8f7f42, type: 2}
+  - {fileID: 11400000, guid: b639ca9a7e0c827408d30a4ad598b7ae, type: 2}
+  baseSicknessChance: 0.4
+  todaysPatients: []
 --- !u!4 &1067018629 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4af9d6fc9e09f0547ad036daf94c6655, type: 3}
@@ -7566,6 +7636,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1ca9f5afb9b586b43957a2a7c307747a, type: 3}
+--- !u!1 &1172904527
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1172904528}
+  m_Layer: 0
+  m_Name: PatientSlot03
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1172904528
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1172904527}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.537, y: 1.5, z: 13.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 591409220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1177803245 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4399045986271202895, guid: 30d1108f0e09dcd45880f9296c80536b, type: 3}
@@ -7968,6 +8069,7 @@ Transform:
   - {fileID: 988682396}
   - {fileID: 1276032648}
   - {fileID: 2021507424}
+  - {fileID: 591409220}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1275119846
@@ -8104,7 +8206,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7356190489869890953, guid: 2ca25c55d54d054428b9598bf83f9461, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.01
+      value: -9.917722
       objectReference: {fileID: 0}
     - target: {fileID: 7356190489869890953, guid: 2ca25c55d54d054428b9598bf83f9461, type: 3}
       propertyPath: m_LocalPosition.y
@@ -8147,6 +8249,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ca25c55d54d054428b9598bf83f9461, type: 3}
+--- !u!1 &1307760365
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1307760366}
+  m_Layer: 0
+  m_Name: PatientSlot05
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1307760366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1307760365}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.156, y: 1.5, z: 13.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 591409220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1312771106
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8555,6 +8688,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1362626070}
   - component: {fileID: 1362626071}
+  - component: {fileID: 1362626072}
   m_Layer: 0
   m_Name: NPCManager
   m_TagString: Untagged
@@ -8615,17 +8749,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1942ea10b400cf344b9d867d8aa2f1b3, type: 2}
   - {fileID: 11400000, guid: 8962307e9e1ab374ea5f380055b2e950, type: 2}
   - {fileID: 11400000, guid: 8da7a785452082243b5204e7330f0f6c, type: 2}
-  diseases:
-  - {fileID: 11400000, guid: 906983526c557d34e8e74ac4cc1bb53c, type: 2}
-  - {fileID: 11400000, guid: cfef2674e295a9143a3dca442028796c, type: 2}
-  - {fileID: 11400000, guid: a9aad6dfc2ffa1a479a76a0feb8a4690, type: 2}
-  - {fileID: 11400000, guid: b142933be2b2b8941908a2e7e69d39ec, type: 2}
-  - {fileID: 11400000, guid: 8d4dcb672a45de44691f40cc42b289ab, type: 2}
-  - {fileID: 11400000, guid: 82275c36de852244385e0f31d7621520, type: 2}
-  - {fileID: 11400000, guid: bf90972863d65b943bf5be3f3cac8f52, type: 2}
-  - {fileID: 11400000, guid: eca312bbf342b9546a19e9897234fac8, type: 2}
-  - {fileID: 11400000, guid: f47c9b24899429f4f97ef401ef8f7f42, type: 2}
-  - {fileID: 11400000, guid: b639ca9a7e0c827408d30a4ad598b7ae, type: 2}
   possibleNames:
   - Maria
   - "Jo\xE3o"
@@ -8639,6 +8762,25 @@ MonoBehaviour:
   - Manuel
   minAge: 18
   maxAge: 80
+--- !u!114 &1362626072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362626069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f37fed97c2aebf74ab15dfd26925119f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClinicPatientPlacer
+  dailySystem: {fileID: 1054002087}
+  patientSlots:
+  - {fileID: 1684966255}
+  - {fileID: 1947390693}
+  - {fileID: 1172904528}
+  - {fileID: 2078304074}
+  - {fileID: 1307760366}
 --- !u!1001 &1384240053
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8950,7 +9092,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -9669,7 +9811,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -9847,7 +9989,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2324616806011375233, guid: 25a534ff3d9f165498c8d8860f014c9f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.0569156
+      value: -13.984637
       objectReference: {fileID: 0}
     - target: {fileID: 2324616806011375233, guid: 25a534ff3d9f165498c8d8860f014c9f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -10311,7 +10453,6 @@ GameObject:
   - component: {fileID: 1604617229}
   - component: {fileID: 1604617228}
   - component: {fileID: 1604617231}
-  - component: {fileID: 1604617232}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -10437,18 +10578,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &1604617232
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604617227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1c0a9b0ed35ca848ad6fe99fd888454, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!4 &1607072719 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c243a9740ddc96249821b1beaa75c852, type: 3}
@@ -11016,6 +11145,37 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3914b16a0e6b7754c9974582c08b4d6d, type: 3}
   m_PrefabInstance: {fileID: 1933050991}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1684966254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1684966255}
+  m_Layer: 0
+  m_Name: PatientSlot01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1684966255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684966254}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.55, y: 1.5, z: 13.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 591409220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1691169162 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3493dcf09a7fa234c8f64002deb33bc9, type: 3}
@@ -12588,6 +12748,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4af9d6fc9e09f0547ad036daf94c6655, type: 3}
   m_PrefabInstance: {fileID: 1947201625}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1947390692
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1947390693}
+  m_Layer: 0
+  m_Name: PatientSlot02
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1947390693
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1947390692}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.032, y: 1.5, z: 13.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 591409220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1961978137
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13057,7 +13248,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
+  m_AdditionalLightsShadowResolutionTier: 0
   m_CustomShadowLayers: 0
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
@@ -13679,6 +13870,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.6, y: 1.23, z: 1.25}
   m_Center: {x: -0.062000155, y: 0.014999956, z: -0.58754814}
+--- !u!1 &2078304073
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2078304074}
+  m_Layer: 0
+  m_Name: PatientSlot04
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2078304074
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078304073}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.631, y: 1.5, z: 13.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 591409220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2078481645
 PrefabInstance:
   m_ObjectHideFlags: 0

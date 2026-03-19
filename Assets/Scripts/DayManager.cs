@@ -18,9 +18,19 @@ public class DayManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private int currentDay = 1;
 
+    [SerializeField] private DailySystem dailySystem;
+
+    [SerializeField] private ClinicPatientPlacer clinicPatientPlacer;
+
     private void Start()
     {
         UpdateDayUI();
+
+        if (dailySystem != null)
+            dailySystem.ProcessNewDay();
+
+        if (clinicPatientPlacer != null)
+            clinicPatientPlacer.PlaceTodaysPatients();
     }
 
     public void AdvanceDay()
@@ -32,6 +42,12 @@ public class DayManager : MonoBehaviour
 
         if (transitionUIManager != null)
             transitionUIManager.CloseTransitionUI();
+
+        if (dailySystem != null)
+            dailySystem.ProcessNewDay();
+
+        if (clinicPatientPlacer != null)
+            clinicPatientPlacer.PlaceTodaysPatients();
 
         Debug.Log($"Advanced to Day {currentDay}");
     }
