@@ -14,24 +14,37 @@ public class LookInteractor : MonoBehaviour
 
     private Highlightable currentHighlightable;
     private DoorInteractable currentDoor;
+    private NPCInteractable currentNPC;
+    private DoctorSeatInteraction currentSeat;
 
-    void Start()
+    private void Start()
     {
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);
     }
 
-    void Update()
+    private void Update()
     {
         DetectObject();
 
-        if (currentDoor != null && Keyboard.current.eKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            currentDoor.Interact();
+            if (currentDoor != null)
+            {
+                currentDoor.Interact();
+            }
+            else if (currentNPC != null)
+            {
+                currentNPC.Interact();
+            }
+            else if (currentSeat != null)
+            {
+                currentSeat.Interact();
+            }
         }
     }
 
-    void DetectObject()
+    private void DetectObject()
     {
         Vector3 origin = rayOrigin.position;
         Vector3 direction = rayOrigin.forward;
@@ -40,11 +53,15 @@ public class LookInteractor : MonoBehaviour
 
         Highlightable foundHighlight = null;
         DoorInteractable foundDoor = null;
+        NPCInteractable foundNPC = null;
+        DoctorSeatInteraction foundSeat = null;
 
         if (Physics.Raycast(origin, direction, out hit, maxDistance, interactLayers))
         {
             foundHighlight = hit.collider.GetComponentInParent<Highlightable>();
             foundDoor = hit.collider.GetComponentInParent<DoorInteractable>();
+            foundNPC = hit.collider.GetComponentInParent<NPCInteractable>();
+            foundSeat = hit.collider.GetComponentInParent<DoctorSeatInteraction>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -59,20 +76,29 @@ public class LookInteractor : MonoBehaviour
         }
 
         currentDoor = foundDoor;
+        currentNPC = foundNPC;
+        currentSeat = foundSeat;
 
         if (hoverPromptText != null)
         {
-            if (currentDoor != null)
-            {
-                if (hoverPromptText != null)
-                {
-                    hoverPromptText.gameObject.SetActive(currentDoor != null);
-                }
-            }
-            else
-            {
-                hoverPromptText.gameObject.SetActive(false);
-            }
+            bool canShowPrompt = currentDoor != null || currentNPC != null || currentSeat != null;
+            hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
+    }
+
+    private void OnDisable()
+    {
+        if (currentHighlightable != null)
+        {
+            currentHighlightable.SetHighlighted(false);
+            currentHighlightable = null;
+        }
+
+        currentDoor = null;
+        currentNPC = null;
+        currentSeat = null;
+
+        if (hoverPromptText != null)
+            hoverPromptText.gameObject.SetActive(false);
     }
 }

@@ -19,14 +19,13 @@ public class ClinicPatientPlacer : MonoBehaviour
             return;
         }
 
-        // 1. devolver todos os NPCs à posição original
+        // devolver todos os NPCs à posição original
         foreach (var npc in dailySystem.AllNPCs)
         {
             if (npc == null) continue;
             npc.ReturnToOriginalPosition();
         }
 
-        // 2. buscar os pacientes do dia
         List<NPCActor> todaysPatients = dailySystem.TodaysPatients;
 
         if (todaysPatients == null || todaysPatients.Count == 0)
@@ -35,21 +34,30 @@ public class ClinicPatientPlacer : MonoBehaviour
             return;
         }
 
-        Debug.Log($"ClinicPatientPlacer: {todaysPatients.Count} pacientes para colocar.");
+        // criar cópia dos slots e baralhar
+        List<Transform> shuffledSlots = new List<Transform>(patientSlots);
 
-        int count = Mathf.Min(todaysPatients.Count, patientSlots.Count);
+        for (int i = 0; i < shuffledSlots.Count; i++)
+        {
+            int randIndex = Random.Range(i, shuffledSlots.Count);
+            Transform temp = shuffledSlots[i];
+            shuffledSlots[i] = shuffledSlots[randIndex];
+            shuffledSlots[randIndex] = temp;
+        }
+
+        int count = Mathf.Min(todaysPatients.Count, shuffledSlots.Count);
 
         for (int i = 0; i < count; i++)
         {
             NPCActor npc = todaysPatients[i];
-            Transform slot = patientSlots[i];
+            Transform slot = shuffledSlots[i];
 
             if (npc == null || slot == null) continue;
 
             npc.transform.position = slot.position;
             npc.transform.rotation = slot.rotation;
 
-            Debug.Log($"{npc.npcName} colocado no slot {i + 1}");
+            Debug.Log($"{npc.npcName} colocado aleatoriamente no slot {slot.name}");
         }
     }
 }
