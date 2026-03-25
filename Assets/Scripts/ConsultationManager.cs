@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class ConsultationManager : MonoBehaviour
@@ -14,11 +15,42 @@ public class ConsultationManager : MonoBehaviour
     [SerializeField] private Transform doctorSeatPoint;
     [SerializeField] private Transform doctorExitPoint;
 
-    private Vector3 patientPreviousPosition;
-    private Quaternion patientPreviousRotation;
+    [Header("Timer")]
+    [SerializeField] private float consultationDuration = 240f; // 4 minutos
+    [SerializeField] private TMP_Text consultationTimerText;
+
+    private float currentTime;
 
     public bool ConsultationActive => consultationActive;
     public NPCActor CurrentPatient => currentPatient;
+
+    private void Start()
+    {
+        if (consultationTimerText != null)
+        {
+            consultationTimerText.text = "00:00";
+            consultationTimerText.gameObject.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
+        if (!consultationActive) return;
+
+        currentTime -= Time.deltaTime;
+
+        if (currentTime <= 0f)
+        {
+            currentTime = 0f;
+            UpdateTimerUI(currentTime);
+
+            Debug.Log("Tempo da consulta terminou.");
+            EndConsultation();
+            return;
+        }
+
+        UpdateTimerUI(currentTime);
+    }
 
     public void StartConsultation(NPCActor patient)
     {
@@ -27,9 +59,6 @@ public class ConsultationManager : MonoBehaviour
 
         consultationActive = true;
         currentPatient = patient;
-
-        patientPreviousPosition = patient.transform.position;
-        patientPreviousRotation = patient.transform.rotation;
 
         if (patientConsultPoint != null)
         {
@@ -42,6 +71,14 @@ public class ConsultationManager : MonoBehaviour
             playerSeatController.SitDown(doctorSeatPoint, doctorExitPoint);
         }
 
+        currentTime = consultationDuration;
+
+        if (consultationTimerText != null)
+        {
+            consultationTimerText.gameObject.SetActive(true);
+            UpdateTimerUI(currentTime);
+        }
+
         Debug.Log($"Consulta iniciada com {patient.npcName}");
     }
 
@@ -50,12 +87,30 @@ public class ConsultationManager : MonoBehaviour
         if (!consultationActive || currentPatient == null)
             return;
 
-        currentPatient.transform.position = patientPreviousPosition;
-        currentPatient.transform.rotation = patientPreviousRotation;
+        currentPatient.ReturnToOriginalPosition();
+        currentPatient.willVisitClinic = false;
+
+        if (consultationTimerText != null)
+            consultationTimerText.gameObject.SetActive(false);
+
+        if (playerSeatController != null && playerSeatController.IsSeated)
+        {
+            playerSeatController.StandUp();
+        }
 
         Debug.Log($"Consulta terminada com {currentPatient.npcName}");
 
         currentPatient = null;
         consultationActive = false;
+    }
+
+    private void UpdateTimerUI(float time)
+    {
+        if (consultationTimerText == null) return;
+
+        int minutes = Mathf.FloorToInt(time / 60f);
+        int seconds = Mathf.FloorToInt(time % 60f);
+
+        consultationTimerText.text = $"{minutes:00}:{seconds:00}";
     }
 }
