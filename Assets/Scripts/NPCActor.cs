@@ -22,6 +22,9 @@ public class NPCActor : MonoBehaviour
     public Vector3 originalPosition;
     public Quaternion originalRotation;
 
+    [Header("Trust")]
+    [Range(0f, 1f)] public float trustInDoctor = 0.5f;
+
     private void Awake()
     {
         originalPosition = transform.position;
@@ -47,15 +50,21 @@ public class NPCActor : MonoBehaviour
         socialTrait = social;
         skillTrait = skill;
 
-        // A doença passa a ser controlada apenas pelo sistema diário
         isSick = false;
         currentDisease = null;
+        willVisitClinic = false;
+        trustInDoctor = 0.5f;
     }
 
     public void SetDisease(DiseaseSO disease)
     {
         currentDisease = disease;
         isSick = disease != null;
+    }
+
+    public void AdjustTrust(float delta)
+    {
+        trustInDoctor = Mathf.Clamp01(trustInDoctor + delta);
     }
 
     [ContextMenu("Print NPC Info")]
@@ -65,7 +74,8 @@ public class NPCActor : MonoBehaviour
             $"NPC: {npcName} | Age: {age} | Personality: {(basePersonality ? basePersonality.name : "None")} | " +
             $"Social Trait: {(socialTrait ? socialTrait.traitName : "None")} | " +
             $"Skill Trait: {(skillTrait ? skillTrait.traitName : "None")} | " +
-            $"Is Sick: {isSick} | Disease: {(currentDisease ? currentDisease.name : "None")}",
+            $"Is Sick: {isSick} | Disease: {(currentDisease ? currentDisease.name : "None")} | " +
+            $"Will Visit Clinic: {willVisitClinic} | Trust: {trustInDoctor:0.00}",
             this
         );
     }

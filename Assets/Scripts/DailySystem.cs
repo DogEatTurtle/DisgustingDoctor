@@ -11,10 +11,11 @@ public class DailySystem : MonoBehaviour
 
     [Header("Chances")]
     [SerializeField, Range(0f, 1f)] private float baseSicknessChance = 0.4f;
+    [SerializeField, Range(0f, 1f)] private float baseClinicVisitChance = 0.7f;
 
     [Header("Today's Patients (Read Only)")]
     [SerializeField] private List<NPCActor> todaysPatients = new();
-    
+
     public List<NPCActor> TodaysPatients => todaysPatients;
     public List<NPCActor> AllNPCs => npcs;
 
@@ -36,13 +37,17 @@ public class DailySystem : MonoBehaviour
 
         todaysPatients.Clear();
 
+        // 1) Gerar quem fica doente hoje
         foreach (var npc in npcs)
         {
             if (npc == null) continue;
 
+            float sicknessModifier = GetSicknessTraitModifier(npc);
+            float finalSicknessChance = Mathf.Clamp01(baseSicknessChance * sicknessModifier);
+
             float roll = Random.value;
 
-            if (roll < baseSicknessChance)
+            if (roll < finalSicknessChance)
             {
                 DiseaseSO randomDisease = diseases[Random.Range(0, diseases.Count)];
                 npc.SetDisease(randomDisease);
@@ -53,6 +58,7 @@ public class DailySystem : MonoBehaviour
             }
         }
 
+        // 2) Recolher só os NPCs doentes
         List<NPCActor> sickNPCs = new();
 
         foreach (var npc in npcs)
@@ -61,14 +67,14 @@ public class DailySystem : MonoBehaviour
                 sickNPCs.Add(npc);
         }
 
-        // limpar flags anteriores
+        // 3) Limpar flags do consultório
         foreach (var npc in npcs)
         {
             if (npc != null)
                 npc.willVisitClinic = false;
         }
 
-        // se ninguém estiver doente, não vai ninguém para o consultório
+        // 4) Se ninguém ficou doente, não vai ninguém
         if (sickNPCs.Count == 0)
         {
             Debug.Log("Nenhum NPC ficou doente hoje. Não há pacientes no consultório.");
@@ -76,25 +82,88 @@ public class DailySystem : MonoBehaviour
             return;
         }
 
-        int targetCount = Mathf.Clamp(sickNPCs.Count, 1, 3);
+        // 5) Dos doentes, calcular quem quer ir ao médico
+        List<NPCActor> willingSickNPCs = new();
 
-        // baralhar lista
-        for (int i = 0; i < sickNPCs.Count; i++)
+        foreach (var npc in sickNPCs)
         {
-            int randIndex = Random.Range(i, sickNPCs.Count);
-            var temp = sickNPCs[i];
-            sickNPCs[i] = sickNPCs[randIndex];
-            sickNPCs[randIndex] = temp;
+            if (npc == null) continue;
+
+            float traitModifier = GetClinicVisitTraitModifier(npc);
+
+            // Confiança:
+            // 0.0 -> 0.5x
+            // 0.5 -> 1.0x
+            // 1.0 -> 1.5x
+            float trustModifier = Mathf.Lerp(0.5f, 1.5f, npc.trustInDoctor);
+
+            float finalVisitChance = Mathf.Clamp01(baseClinicVisitChance * traitModifier * trustModifier);
+
+            if (Random.value < finalVisitChance)
+            {
+                willingSickNPCs.Add(npc);
+            }
+
+            Debug.Log(
+                $"{npc.npcName} | Trust: {npc.trustInDoctor:0.00} | " +
+                $"VisitChance: {finalVisitChance:0.00}"
+            );
         }
 
-        // escolher os primeiros
-        for (int i = 0; i < targetCount && i < sickNPCs.Count; i++)
+        // 6) Se há doentes mas nenhum quis ir, o consultório fica vazio
+        if (willingSickNPCs.Count == 0)
         {
-            sickNPCs[i].willVisitClinic = true;
-            todaysPatients.Add(sickNPCs[i]);
+            Debug.Log("Há NPCs doentes, mas nenhum quis ir ao consultório hoje.");
+            LogDailyStatus();
+            return;
+        }
+
+        // 7) Máximo de 3 pacientes naturais por dia
+        int targetCount = Mathf.Clamp(willingSickNPCs.Count, 1, 3);
+
+        // 8) Baralhar a lista
+        for (int i = 0; i < willingSickNPCs.Count; i++)
+        {
+            int randIndex = Random.Range(i, willingSickNPCs.Count);
+            NPCActor temp = willingSickNPCs[i];
+            willingSickNPCs[i] = willingSickNPCs[randIndex];
+            willingSickNPCs[randIndex] = temp;
+        }
+
+        // 9) Escolher os primeiros
+        for (int i = 0; i < targetCount && i < willingSickNPCs.Count; i++)
+        {
+            willingSickNPCs[i].willVisitClinic = true;
+            todaysPatients.Add(willingSickNPCs[i]);
         }
 
         LogDailyStatus();
+    }
+
+    private float GetSicknessTraitModifier(NPCActor npc)
+    {
+        float modifier = 1f;
+
+        if (npc.socialTrait != null)
+            modifier *= npc.socialTrait.infectionRiskMultiplier;
+
+        if (npc.skillTrait != null)
+            modifier *= npc.skillTrait.infectionRiskMultiplier;
+
+        return modifier;
+    }
+
+    private float GetClinicVisitTraitModifier(NPCActor npc)
+    {
+        float modifier = 1f;
+
+        if (npc.socialTrait != null)
+            modifier *= npc.socialTrait.doctorVisitChanceMultiplier;
+
+        if (npc.skillTrait != null)
+            modifier *= npc.skillTrait.doctorVisitChanceMultiplier;
+
+        return modifier;
     }
 
     private void LogDailyStatus()
@@ -108,7 +177,8 @@ public class DailySystem : MonoBehaviour
             string diseaseName = npc.currentDisease ? npc.currentDisease.name : "None";
 
             Debug.Log(
-                $"{npc.npcName} | Sick: {npc.isSick} | Disease: {diseaseName} | Will Visit Clinic: {npc.willVisitClinic}"
+                $"{npc.npcName} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
+                $"Trust: {npc.trustInDoctor:0.00} | Will Visit Clinic: {npc.willVisitClinic}"
             );
         }
 

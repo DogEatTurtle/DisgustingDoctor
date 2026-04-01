@@ -16,6 +16,7 @@ public class LookInteractor : MonoBehaviour
     private DoorInteractable currentDoor;
     private NPCInteractable currentNPC;
     private DoctorSeatInteraction currentSeat;
+    private DiagnosisInteractable currentDiagnosis;
 
     private void Start()
     {
@@ -30,17 +31,13 @@ public class LookInteractor : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             if (currentDoor != null)
-            {
                 currentDoor.Interact();
-            }
             else if (currentNPC != null)
-            {
                 currentNPC.Interact();
-            }
             else if (currentSeat != null)
-            {
                 currentSeat.Interact();
-            }
+            else if (currentDiagnosis != null)
+                currentDiagnosis.Interact();
         }
     }
 
@@ -55,6 +52,7 @@ public class LookInteractor : MonoBehaviour
         DoorInteractable foundDoor = null;
         NPCInteractable foundNPC = null;
         DoctorSeatInteraction foundSeat = null;
+        DiagnosisInteractable foundDiagnosis = null;
 
         if (Physics.Raycast(origin, direction, out hit, maxDistance, interactLayers))
         {
@@ -62,6 +60,7 @@ public class LookInteractor : MonoBehaviour
             foundDoor = hit.collider.GetComponentInParent<DoorInteractable>();
             foundNPC = hit.collider.GetComponentInParent<NPCInteractable>();
             foundSeat = hit.collider.GetComponentInParent<DoctorSeatInteraction>();
+            foundDiagnosis = hit.collider.GetComponentInParent<DiagnosisInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -78,10 +77,16 @@ public class LookInteractor : MonoBehaviour
         currentDoor = foundDoor;
         currentNPC = foundNPC;
         currentSeat = foundSeat;
+        currentDiagnosis = foundDiagnosis;
 
         if (hoverPromptText != null)
         {
-            bool canShowPrompt = currentDoor != null || currentNPC != null || currentSeat != null;
+            bool canShowPrompt =
+                currentDoor != null ||
+                currentNPC != null ||
+                currentSeat != null ||
+                currentDiagnosis != null;
+
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
     }
@@ -97,6 +102,7 @@ public class LookInteractor : MonoBehaviour
         currentDoor = null;
         currentNPC = null;
         currentSeat = null;
+        currentDiagnosis = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);
