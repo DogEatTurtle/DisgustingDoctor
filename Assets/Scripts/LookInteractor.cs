@@ -17,6 +17,7 @@ public class LookInteractor : MonoBehaviour
     private NPCInteractable currentNPC;
     private DoctorSeatInteraction currentSeat;
     private DiagnosisInteractable currentDiagnosis;
+    private ComputerInteractable currentComputer;
 
     private void Start()
     {
@@ -38,6 +39,8 @@ public class LookInteractor : MonoBehaviour
                 currentSeat.Interact();
             else if (currentDiagnosis != null)
                 currentDiagnosis.Interact();
+            else if (currentComputer != null)
+                currentComputer.Interact();
         }
     }
 
@@ -53,6 +56,7 @@ public class LookInteractor : MonoBehaviour
         NPCInteractable foundNPC = null;
         DoctorSeatInteraction foundSeat = null;
         DiagnosisInteractable foundDiagnosis = null;
+        ComputerInteractable foundComputer = null;
 
         if (Physics.Raycast(origin, direction, out hit, maxDistance, interactLayers))
         {
@@ -61,6 +65,7 @@ public class LookInteractor : MonoBehaviour
             foundNPC = hit.collider.GetComponentInParent<NPCInteractable>();
             foundSeat = hit.collider.GetComponentInParent<DoctorSeatInteraction>();
             foundDiagnosis = hit.collider.GetComponentInParent<DiagnosisInteractable>();
+            foundComputer = hit.collider.GetComponentInParent<ComputerInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -78,6 +83,7 @@ public class LookInteractor : MonoBehaviour
         currentNPC = foundNPC;
         currentSeat = foundSeat;
         currentDiagnosis = foundDiagnosis;
+        currentComputer = foundComputer;
 
         if (hoverPromptText != null)
         {
@@ -85,7 +91,8 @@ public class LookInteractor : MonoBehaviour
                 currentDoor != null ||
                 currentNPC != null ||
                 currentSeat != null ||
-                currentDiagnosis != null;
+                currentDiagnosis != null ||
+                currentComputer != null;
 
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
@@ -103,6 +110,7 @@ public class LookInteractor : MonoBehaviour
         currentNPC = null;
         currentSeat = null;
         currentDiagnosis = null;
+        currentComputer = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);
