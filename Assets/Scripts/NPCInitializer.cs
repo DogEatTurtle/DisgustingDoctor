@@ -15,21 +15,8 @@ public class NPCInitializer : MonoBehaviour
     [Header("Available Skill Traits")]
     [SerializeField] private List<PersonalityTraitSO> skillTraits = new();
 
-    [Header("Temporary Name Pool")]
-    [SerializeField]
-    private List<string> possibleNames = new()
-    {
-        "Maria",
-        "João",
-        "Helena",
-        "Carlos",
-        "Ana",
-        "Rui",
-        "Teresa",
-        "Miguel",
-        "Sofia",
-        "Manuel"
-    };
+    [Header("Available Professions")]
+    [SerializeField] private List<ProfessionSO> professions = new();
 
     [Header("Age Range")]
     [SerializeField] private int minAge = 18;
@@ -49,50 +36,41 @@ public class NPCInitializer : MonoBehaviour
             return;
         }
 
-        if (basePersonalities.Count == 0 || socialTraits.Count == 0 || skillTraits.Count == 0)
+        if (basePersonalities.Count == 0 || socialTraits.Count == 0 || skillTraits.Count == 0 || professions.Count == 0)
         {
-            Debug.LogWarning("One or more personality/trait lists are empty.");
+            Debug.LogWarning("One or more data lists are empty.");
             return;
         }
-
-        List<string> availableNames = new(possibleNames);
 
         foreach (var npc in sceneNPCs)
         {
             if (npc == null) continue;
 
-            string randomName = GetRandomName(availableNames);
             int randomAge = Random.Range(minAge, maxAge + 1);
 
             PersonalitySO randomPersonality = basePersonalities[Random.Range(0, basePersonalities.Count)];
             PersonalityTraitSO randomSocialTrait = socialTraits[Random.Range(0, socialTraits.Count)];
             PersonalityTraitSO randomSkillTrait = skillTraits[Random.Range(0, skillTraits.Count)];
+            ProfessionSO randomProfession = professions[Random.Range(0, professions.Count)];
 
-            npc.AssignRandomData(
-                randomName,
-                randomAge,
-                randomPersonality,
-                randomSocialTrait,
-                randomSkillTrait
-            );
+            npc.age = randomAge;
+            npc.basePersonality = randomPersonality;
+            npc.socialTrait = randomSocialTrait;
+            npc.skillTrait = randomSkillTrait;
+            npc.profession = randomProfession;
+
+            npc.isSick = false;
+            npc.currentDisease = null;
+            npc.willVisitClinic = false;
+            npc.trustInDoctor = 0.5f;
 
             Debug.Log(
                 $"NPC Initialized -> Name: {npc.npcName} | Age: {npc.age} | " +
+                $"Profession: {(npc.profession ? npc.profession.professionName : "None")} | " +
                 $"Base Personality: {(npc.basePersonality ? npc.basePersonality.name : "None")} | " +
                 $"Social Trait: {(npc.socialTrait ? npc.socialTrait.traitName : "None")} | " +
                 $"Skill Trait: {(npc.skillTrait ? npc.skillTrait.traitName : "None")}"
             );
         }
-    }
-
-    private string GetRandomName(List<string> availableNames)
-    {
-        if (availableNames.Count == 0)
-            return $"NPC_{Random.Range(1000, 9999)}";
-
-        int index = Random.Range(0, availableNames.Count);
-        string chosenName = availableNames[index];
-        availableNames.RemoveAt(index);
-        return chosenName;
     }
 }

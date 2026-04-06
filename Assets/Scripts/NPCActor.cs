@@ -15,6 +15,9 @@ public class NPCActor : MonoBehaviour
     public bool isSick;
     public DiseaseSO currentDisease;
 
+    [Header("Background")]
+    public ProfessionSO profession;
+
     [Header("Daily State")]
     public bool willVisitClinic;
 
@@ -71,7 +74,8 @@ public class NPCActor : MonoBehaviour
     public void PrintInfo()
     {
         Debug.Log(
-            $"NPC: {npcName} | Age: {age} | Personality: {(basePersonality ? basePersonality.name : "None")} | " +
+            $"NPC: {npcName} | Age: {age} | Profession: {(profession ? profession.professionName : "None")} | " +
+            $"Personality: {(basePersonality ? basePersonality.name : "None")} | " +
             $"Social Trait: {(socialTrait ? socialTrait.traitName : "None")} | " +
             $"Skill Trait: {(skillTrait ? skillTrait.traitName : "None")} | " +
             $"Is Sick: {isSick} | Disease: {(currentDisease ? currentDisease.name : "None")} | " +

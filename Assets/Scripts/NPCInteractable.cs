@@ -35,7 +35,6 @@ public class NPCInteractable : MonoBehaviour
         // Se há consulta ativa, só o paciente atual pode abrir conversa
         if (consultationManager.CurrentPatient == npcActor)
         {
-            Debug.Log($"Abrir conversa com o paciente atual: {npcActor.npcName}");
 
             if (conversationManager != null)
             {

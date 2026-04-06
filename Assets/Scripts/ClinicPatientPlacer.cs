@@ -10,8 +10,7 @@ public class ClinicPatientPlacer : MonoBehaviour
     [SerializeField] private List<Transform> patientSlots = new();
 
     public void PlaceTodaysPatients()
-    {
-        Debug.Log("ClinicPatientPlacer -> PlaceTodaysPatients chamado");
+    { 
 
         if (dailySystem == null)
         {
@@ -56,8 +55,6 @@ public class ClinicPatientPlacer : MonoBehaviour
 
             npc.transform.position = slot.position;
             npc.transform.rotation = slot.rotation;
-
-            Debug.Log($"{npc.npcName} colocado aleatoriamente no slot {slot.name}");
         }
     }
 }

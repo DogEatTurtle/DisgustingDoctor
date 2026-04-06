@@ -103,11 +103,6 @@ public class DailySystem : MonoBehaviour
             {
                 willingSickNPCs.Add(npc);
             }
-
-            Debug.Log(
-                $"{npc.npcName} | Trust: {npc.trustInDoctor:0.00} | " +
-                $"VisitChance: {finalVisitChance:0.00}"
-            );
         }
 
         // 6) Se há doentes mas nenhum quis ir, o consultório fica vazio
@@ -166,6 +161,14 @@ public class DailySystem : MonoBehaviour
         return modifier;
     }
 
+    private float GetFinalClinicVisitChance(NPCActor npc)
+    {
+        float traitModifier = GetClinicVisitTraitModifier(npc);
+        float trustModifier = Mathf.Lerp(0.5f, 1.5f, npc.trustInDoctor);
+
+        return Mathf.Clamp01(baseClinicVisitChance * traitModifier * trustModifier);
+    }
+
     private void LogDailyStatus()
     {
         Debug.Log("=== Daily NPC Status ===");
@@ -175,13 +178,13 @@ public class DailySystem : MonoBehaviour
             if (npc == null) continue;
 
             string diseaseName = npc.currentDisease ? npc.currentDisease.name : "None";
+            float finalVisitChance = GetFinalClinicVisitChance(npc);
 
             Debug.Log(
                 $"{npc.npcName} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
-                $"Trust: {npc.trustInDoctor:0.00} | Will Visit Clinic: {npc.willVisitClinic}"
+                $"Trust: {npc.trustInDoctor:0.00} | Will Visit Clinic: {npc.willVisitClinic} | " +
+                $"VisitChance: {finalVisitChance:0.00}"
             );
         }
-
-        Debug.Log($"Today's patients count: {todaysPatients.Count}");
     }
 }

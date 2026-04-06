@@ -2312,6 +2312,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3598414391036363135, guid: bc0242a6871a47d4fa0bdf0314de26e1, type: 3}
+      propertyPath: npcName
+      value: A
+      objectReference: {fileID: 0}
     - target: {fileID: 5695444783871990051, guid: bc0242a6871a47d4fa0bdf0314de26e1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -15.61
@@ -4263,6 +4267,10 @@ PrefabInstance:
     - target: {fileID: 3904477724316705531, guid: be8c7aadd0dc7f247b09a6bc4ce6b4c2, type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4867537581526048443, guid: be8c7aadd0dc7f247b09a6bc4ce6b4c2, type: 3}
+      propertyPath: npcName
+      value: C
       objectReference: {fileID: 0}
     - target: {fileID: 8085521314298745426, guid: be8c7aadd0dc7f247b09a6bc4ce6b4c2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6285,6 +6293,10 @@ PrefabInstance:
     - target: {fileID: 3379364793604896463, guid: ed492426a6a85f144b87582aebfe1d6d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014000382231845825, guid: ed492426a6a85f144b87582aebfe1d6d, type: 3}
+      propertyPath: npcName
+      value: D
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12808,6 +12820,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 155787924758744526, guid: 2ca25c55d54d054428b9598bf83f9461, type: 3}
+      propertyPath: npcName
+      value: E
+      objectReference: {fileID: 0}
     - target: {fileID: 6761078631540323405, guid: 2ca25c55d54d054428b9598bf83f9461, type: 3}
       propertyPath: m_Name
       value: NPC_05
@@ -13609,17 +13625,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1942ea10b400cf344b9d867d8aa2f1b3, type: 2}
   - {fileID: 11400000, guid: 8962307e9e1ab374ea5f380055b2e950, type: 2}
   - {fileID: 11400000, guid: 8da7a785452082243b5204e7330f0f6c, type: 2}
-  possibleNames:
-  - Maria
-  - "Jo\xE3o"
-  - Helena
-  - Carlos
-  - Ana
-  - Rui
-  - Teresa
-  - Miguel
-  - Sofia
-  - Manuel
+  professions:
+  - {fileID: 11400000, guid: c2a893941c33bc74ba4cbbf859bb666d, type: 2}
+  - {fileID: 11400000, guid: d515ff41c39bcef4d99903c7f7a330e6, type: 2}
+  - {fileID: 11400000, guid: c3c9b8310f3f9c1439e2ebf4244c058b, type: 2}
+  - {fileID: 11400000, guid: ca1a3d00d7e0f064698a218f87bcb018, type: 2}
   minAge: 18
   maxAge: 80
 --- !u!114 &1362626072
@@ -15356,6 +15366,10 @@ PrefabInstance:
     - target: {fileID: 4925758306892389795, guid: 25a534ff3d9f165498c8d8860f014c9f, type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8771928984126690414, guid: 25a534ff3d9f165498c8d8860f014c9f, type: 3}
+      propertyPath: npcName
+      value: B
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
