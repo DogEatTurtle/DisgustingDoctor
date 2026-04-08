@@ -28,6 +28,9 @@ public class NPCActor : MonoBehaviour
     [Header("Trust")]
     [Range(0f, 1f)] public float trustInDoctor = 0.5f;
 
+    [Header("Patient Record")]
+    public PatientRecordData patientRecord = new PatientRecordData();
+
     private void Awake()
     {
         originalPosition = transform.position;
@@ -57,6 +60,8 @@ public class NPCActor : MonoBehaviour
         currentDisease = null;
         willVisitClinic = false;
         trustInDoctor = 0.5f;
+
+        patientRecord.InitializeWithNameOnly(npcName);
     }
 
     public void SetDisease(DiseaseSO disease)

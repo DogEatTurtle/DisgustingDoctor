@@ -89,15 +89,7 @@ public class DailySystem : MonoBehaviour
         {
             if (npc == null) continue;
 
-            float traitModifier = GetClinicVisitTraitModifier(npc);
-
-            // Confiança:
-            // 0.0 -> 0.5x
-            // 0.5 -> 1.0x
-            // 1.0 -> 1.5x
-            float trustModifier = Mathf.Lerp(0.5f, 1.5f, npc.trustInDoctor);
-
-            float finalVisitChance = Mathf.Clamp01(baseClinicVisitChance * traitModifier * trustModifier);
+            float finalVisitChance = GetFinalClinicVisitChance(npc);
 
             if (Random.value < finalVisitChance)
             {
@@ -169,6 +161,17 @@ public class DailySystem : MonoBehaviour
         return Mathf.Clamp01(baseClinicVisitChance * traitModifier * trustModifier);
     }
 
+    public float GetFinalClinicVisitChanceForNPC(NPCActor npc)
+    {
+        if (npc == null) return 0f;
+        return GetFinalClinicVisitChance(npc);
+    }
+
+    public string GetFormattedClinicVisitChance(NPCActor npc)
+    {
+        return GetFinalClinicVisitChanceForNPC(npc).ToString("0.00");
+    }
+
     private void LogDailyStatus()
     {
         Debug.Log("=== Daily NPC Status ===");
@@ -186,5 +189,7 @@ public class DailySystem : MonoBehaviour
                 $"VisitChance: {finalVisitChance:0.00}"
             );
         }
+
+        Debug.Log($"Today's patients count: {todaysPatients.Count}");
     }
 }
