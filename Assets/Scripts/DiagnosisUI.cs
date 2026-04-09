@@ -130,12 +130,24 @@ public class DiagnosisUI : MonoBehaviour
 
         bool correct = selectedDisease == patient.currentDisease;
 
+        if (patient.patientRecord != null)
+        {
+            string recordedDiseaseName = correct
+                ? selectedDisease.diseaseName
+                : $"{selectedDisease.diseaseName} (mistaken)";
+
+            patient.patientRecord.UnlockLastDisease(recordedDiseaseName);
+            Debug.Log($"[Diagnosis] Recorded last disease for {patient.npcName} -> {recordedDiseaseName}");
+        }
+
         if (correct)
         {
             patient.AdjustTrust(trustGainOnCorrect);
 
             if (moneyManager != null)
                 moneyManager.AddMoney(rewardOnCorrectDiagnosis);
+
+            UnlockRecordOnCorrectDiagnosis(patient);
 
             SetFeedback($"Correct. +{rewardOnCorrectDiagnosis} coins. Trust increased to {patient.trustInDoctor:0.00}");
         }
@@ -167,6 +179,31 @@ public class DiagnosisUI : MonoBehaviour
             conversationManager.CloseConversation();
 
         consultationManager.EndConsultation();
+    }
+
+    private void UnlockRecordOnCorrectDiagnosis(NPCActor patient)
+    {
+        if (patient == null || patient.patientRecord == null) return;
+
+        var record = patient.patientRecord;
+
+        if (!record.personalityUnlocked && patient.basePersonality != null)
+        {
+            record.UnlockPersonality(patient.basePersonality.profileName);
+            Debug.Log($"[Diagnosis] Unlocked personality for {patient.npcName}");
+        }
+
+        if (!record.socialTraitUnlocked && patient.socialTrait != null)
+        {
+            record.UnlockSocialTrait(patient.socialTrait.traitName);
+            Debug.Log($"[Diagnosis] Unlocked social trait for {patient.npcName}");
+        }
+
+        if (!record.skillTraitUnlocked && patient.skillTrait != null)
+        {
+            record.UnlockSkillTrait(patient.skillTrait.traitName);
+            Debug.Log($"[Diagnosis] Unlocked skill trait for {patient.npcName}");
+        }
     }
 
     private void ShowResultImage(bool correct)

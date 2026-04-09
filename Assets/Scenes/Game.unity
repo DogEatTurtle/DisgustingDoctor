@@ -1451,6 +1451,7 @@ MonoBehaviour:
   ollamaClient: {fileID: 147341605}
   fpsController: {fileID: 1485733404}
   lookInteractor: {fileID: 1485733406}
+  infoExtractor: {fileID: 1362626073}
   conversationPanel: {fileID: 1224322165}
   npcNameText: {fileID: 816081616}
   npcReplyText: {fileID: 534996511}
@@ -15204,6 +15205,7 @@ GameObject:
   - component: {fileID: 1362626070}
   - component: {fileID: 1362626071}
   - component: {fileID: 1362626072}
+  - component: {fileID: 1362626073}
   m_Layer: 0
   m_Name: NPCManager
   m_TagString: Untagged
@@ -15290,6 +15292,19 @@ MonoBehaviour:
   - {fileID: 1172904528}
   - {fileID: 2078304074}
   - {fileID: 1307760366}
+--- !u!114 &1362626073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362626069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2236f2dbf1aac64db02f3ac7ac81a50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ollamaClient: {fileID: 147341605}
 --- !u!1 &1378953374
 GameObject:
   m_ObjectHideFlags: 0
@@ -17462,7 +17477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   patientRecordsPanel: {fileID: 792449775}
-  patientRecordsUI: {fileID: 0}
+  patientRecordsUI: {fileID: 1518803543}
   fpsController: {fileID: 1485733404}
   lookInteractor: {fileID: 1485733406}
 --- !u!114 &1518803543
@@ -20722,8 +20737,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 149.34, y: -220}
-  m_SizeDelta: {x: 487.58, y: 35.5939}
+  m_AnchoredPosition: {x: 154.64267, y: -220}
+  m_SizeDelta: {x: 476.9747, y: 35.5939}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1853042266
 MonoBehaviour:
@@ -20745,7 +20760,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Clinic visting chance:'
+  m_text: 'Clinic visiting chance:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -22859,7 +22874,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Clinic visting chance:'
+  m_text: 'Clinic visiting chance:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -8,6 +8,7 @@ public class ConversationManager : MonoBehaviour
     [SerializeField] private OllamaClient ollamaClient;
     [SerializeField] private FPSController fpsController;
     [SerializeField] private LookInteractor lookInteractor;
+    [SerializeField] private PatientInfoExtractor infoExtractor;
 
     [Header("UI")]
     [SerializeField] private GameObject conversationPanel;
@@ -113,13 +114,16 @@ public class ConversationManager : MonoBehaviour
 
         inputField.text = "";
 
-        string systemPrompt = BuildSystemPrompt(activeNPC);
-        string userPrompt = BuildUserPrompt(activeNPC, playerMessage);
+        NPCActor npcForExtraction = activeNPC;
 
-        string reply = await ollamaClient.ChatOnceAsync(systemPrompt, userPrompt);
+        var prompt = PromptBuilder.BuildPatientRoleplay(activeNPC, playerMessage);
+        string reply = await ollamaClient.ChatOnceAsync(prompt.system, prompt.user);
 
         if (npcReplyText != null)
             npcReplyText.text = reply;
+
+        if (infoExtractor != null)
+            _ = infoExtractor.ExtractAndUnlockAsync(npcForExtraction, playerMessage, reply);
 
         isBusy = false;
 
@@ -130,55 +134,5 @@ public class ConversationManager : MonoBehaviour
     public void SubmitFromInput(string _)
     {
         Submit();
-    }
-
-    private string BuildSystemPrompt(NPCActor npc)
-    {
-        string personalityName = npc.basePersonality != null ? npc.basePersonality.profileName : "Unknown";
-        string speakingStyle = npc.basePersonality != null ? npc.basePersonality.speakingStyleNotes : "";
-        string socialTrait = npc.socialTrait != null ? npc.socialTrait.traitName : "None";
-        string socialHint = npc.socialTrait != null ? npc.socialTrait.llmHint : "";
-        string skillTrait = npc.skillTrait != null ? npc.skillTrait.traitName : "None";
-        string skillHint = npc.skillTrait != null ? npc.skillTrait.llmHint : "";
-        string diseaseName = npc.currentDisease != null ? npc.currentDisease.diseaseName : "None";
-
-        float talkativeness = npc.basePersonality != null ? npc.basePersonality.talkativeness : 0.5f;
-        float directness = npc.basePersonality != null ? npc.basePersonality.directness : 0.5f;
-        float cooperativeness = npc.basePersonality != null ? npc.basePersonality.cooperativeness : 0.5f;
-        float dramatization = npc.basePersonality != null ? npc.basePersonality.dramatization : 0.5f;
-
-        return
-$@"You are roleplaying as a villager speaking to the doctor during a medical consultation in a game.
-
-Character data:
-- Name: {npc.npcName}
-- Age: {npc.age}
-- Base personality: {personalityName}
-- Speaking style: {speakingStyle}
-- Social trait: {socialTrait}
-- Social trait hint: {socialHint}
-- Skill trait: {skillTrait}
-- Skill trait hint: {skillHint}
-- Current health problem: {diseaseName}
-- Talkativeness: {talkativeness:0.00}
-- Directness: {directness:0.00}
-- Cooperativeness: {cooperativeness:0.00}
-- Dramatization: {dramatization:0.00}
-
-Rules:
-- Speak like a believable patient, not like a medical textbook.
-- Do not directly reveal the disease name unless it would make sense.
-- Describe symptoms, sensations, recent context, and worries naturally.
-- Stay consistent with the assigned disease and personality.
-- Keep replies fairly short, usually 1 to 3 sentences.";
-    }
-
-    private string BuildUserPrompt(NPCActor npc, string playerMessage)
-    {
-        return
-$@"The doctor asks:
-{playerMessage}
-
-Reply as the patient.";
     }
 }
