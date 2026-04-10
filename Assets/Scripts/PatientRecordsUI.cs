@@ -18,6 +18,7 @@ public class PatientRecordsUI : MonoBehaviour
 
     [Header("Record Fields")]
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text statusText;
     [SerializeField] private TMP_Text ageText;
     [SerializeField] private TMP_Text professionText;
     [SerializeField] private TMP_Text personalityText;
@@ -52,14 +53,11 @@ public class PatientRecordsUI : MonoBehaviour
         if (listContainer == null || entryPrefab == null) return;
 
         foreach (Transform child in listContainer)
-        {
             Destroy(child.gameObject);
-        }
 
         foreach (var npc in npcs)
         {
             if (npc == null) continue;
-
             PatientRecordEntryUI entry = Instantiate(entryPrefab, listContainer);
             entry.Setup(npc, this);
         }
@@ -76,7 +74,6 @@ public class PatientRecordsUI : MonoBehaviour
 
     public void OpenPatientRecord(NPCActor npc)
     {
-        Debug.Log($"[PRUI] OpenPatientRecord npc={(npc != null ? npc.npcName : "NULL")} listPanel={patientListPanel} recordPanel={patientRecordPanel}");
         if (npc == null) return;
 
         if (patientListPanel != null)
@@ -88,6 +85,8 @@ public class PatientRecordsUI : MonoBehaviour
         PatientRecordData record = npc.patientRecord;
 
         SetText(nameText, string.IsNullOrEmpty(record.patientName) ? npc.npcName : record.patientName);
+        SetText(statusText, record.status.ToString());
+
         SetText(ageText, record.ageUnlocked ? record.age.ToString() : "???");
         SetText(professionText, record.professionUnlocked ? record.professionName : "???");
         SetText(personalityText, record.personalityUnlocked ? record.personalityName : "???");
@@ -100,10 +99,19 @@ public class PatientRecordsUI : MonoBehaviour
             record.socialTraitUnlocked &&
             record.skillTraitUnlocked;
 
-        if (canShowVisitChance && dailySystem != null)
-            SetText(clinicVisitChanceText, dailySystem.GetFormattedClinicVisitChance(npc));
+        if (!npc.isAlive)
+        {
+            SetText(clinicVisitChanceText, "0%");
+        }
+        else if (canShowVisitChance && dailySystem != null)
+        {
+            float chance = dailySystem.GetFinalClinicVisitChanceForNPC(npc);
+            SetText(clinicVisitChanceText, $"{chance * 100f:0}%");
+        }
         else
+        {
             SetText(clinicVisitChanceText, "???");
+        }
     }
 
     public void ShowPatientList()

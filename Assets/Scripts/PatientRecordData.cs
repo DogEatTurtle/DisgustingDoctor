@@ -4,8 +4,16 @@ using UnityEngine;
 [Serializable]
 public class PatientRecordData
 {
+    public enum HealthStatus
+    {
+        Healthy,
+        Sick,
+        Deceased
+    }
+
     [Header("Always Visible")]
     public string patientName;
+    public HealthStatus status = HealthStatus.Healthy;
 
     [Header("Unlocked Fields")]
     public bool ageUnlocked;
@@ -29,6 +37,7 @@ public class PatientRecordData
     public void InitializeWithNameOnly(string name)
     {
         patientName = name;
+        status = HealthStatus.Healthy;
 
         ageUnlocked = false;
         age = 0;
@@ -49,39 +58,10 @@ public class PatientRecordData
         lastDiseaseName = "";
     }
 
-    public void UnlockAge(int value)
-    {
-        ageUnlocked = true;
-        age = value;
-    }
-
-    public void UnlockProfession(string value)
-    {
-        professionUnlocked = true;
-        professionName = value;
-    }
-
-    public void UnlockPersonality(string value)
-    {
-        personalityUnlocked = true;
-        personalityName = value;
-    }
-
-    public void UnlockSocialTrait(string value)
-    {
-        socialTraitUnlocked = true;
-        socialTraitName = value;
-    }
-
-    public void UnlockSkillTrait(string value)
-    {
-        skillTraitUnlocked = true;
-        skillTraitName = value;
-    }
-
-    public void UnlockLastDisease(string value)
-    {
-        lastDiseaseUnlocked = true;
-        lastDiseaseName = value;
-    }
+    public void UnlockAge(int value) { ageUnlocked = true; age = value; }
+    public void UnlockProfession(string value) { professionUnlocked = true; professionName = value; }
+    public void UnlockPersonality(string value) { personalityUnlocked = true; personalityName = value; }
+    public void UnlockSocialTrait(string value) { socialTraitUnlocked = true; socialTraitName = value; }
+    public void UnlockSkillTrait(string value) { skillTraitUnlocked = true; skillTraitName = value; }
+    public void UnlockLastDisease(string value) { lastDiseaseUnlocked = true; lastDiseaseName = value; }
 }

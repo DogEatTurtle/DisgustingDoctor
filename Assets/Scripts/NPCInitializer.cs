@@ -59,15 +59,21 @@ public class NPCInitializer : MonoBehaviour
             npc.skillTrait = randomSkillTrait;
             npc.profession = randomProfession;
 
+            npc.isAlive = true;
             npc.isSick = false;
             npc.currentDisease = null;
+            npc.daysSick = 0;
+            npc.daysImmune = 0;
+            npc.currentVisibleSymptoms.Clear();
             npc.willVisitClinic = false;
             npc.trustInDoctor = 0.5f;
+
+            npc.patientRecord.InitializeWithNameOnly(npc.npcName);
 
             Debug.Log(
                 $"NPC Initialized -> Name: {npc.npcName} | Age: {npc.age} | " +
                 $"Profession: {(npc.profession ? npc.profession.professionName : "None")} | " +
-                $"Base Personality: {(npc.basePersonality ? npc.basePersonality.name : "None")} | " +
+                $"Base Personality: {(npc.basePersonality ? npc.basePersonality.profileName : "None")} | " +
                 $"Social Trait: {(npc.socialTrait ? npc.socialTrait.traitName : "None")} | " +
                 $"Skill Trait: {(npc.skillTrait ? npc.skillTrait.traitName : "None")}"
             );
