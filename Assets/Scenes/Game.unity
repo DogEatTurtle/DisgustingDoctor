@@ -2646,6 +2646,51 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &235982047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 235982049}
+  - component: {fileID: 235982048}
+  m_Layer: 0
+  m_Name: PlayerUpgradeInventory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &235982048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 235982047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ce9fe558eff2d64ab4d557f43ae8d8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeInventory
+  ownedUpgrades: []
+--- !u!4 &235982049
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 235982047}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 460.5997, y: 299.55493, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &244645783
 GameObject:
   m_ObjectHideFlags: 0
@@ -12890,7 +12935,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f47c9b24899429f4f97ef401ef8f7f42, type: 2}
   - {fileID: 11400000, guid: b639ca9a7e0c827408d30a4ad598b7ae, type: 2}
   baseSicknessChance: 0.4
-  baseClinicVisitChance: 0.7
+  baseClinicVisitChance: 0.5
   deathChanceAfterThreeDays: 0.1
   todaysPatients: []
 --- !u!114 &1054002088
@@ -23368,6 +23413,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2013353023}
+  - component: {fileID: 2013353025}
+  - component: {fileID: 2013353024}
   m_Layer: 0
   m_Name: VirusManager
   m_TagString: Untagged
@@ -23390,6 +23437,41 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2013353024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013353022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59279ec91cfbb074c8e55e6ca7618fa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirusDebugMenu
+  inventory: {fileID: 235982048}
+  lab: {fileID: 2013353025}
+  upgradeToAdd: {fileID: 0}
+  slotIndex: 0
+--- !u!114 &2013353025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013353022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74834b66dbc3bf64aabc0f97154e352d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirusLabManager
+  playerInventory: {fileID: 235982048}
+  currentBlueprint:
+    slots:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
 --- !u!1001 &2015207699
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26211,6 +26293,7 @@ SceneRoots:
   - {fileID: 147341606}
   - {fileID: 1362626070}
   - {fileID: 1757909250}
+  - {fileID: 235982049}
   - {fileID: 2013353023}
   - {fileID: 685380247}
   - {fileID: 1518803536}

@@ -11,7 +11,7 @@ public class DailySystem : MonoBehaviour
 
     [Header("Chances")]
     [SerializeField, Range(0f, 1f)] private float baseSicknessChance = 0.4f;
-    [SerializeField, Range(0f, 1f)] private float baseClinicVisitChance = 0.7f;
+    [SerializeField, Range(0f, 1f)] private float baseClinicVisitChance = 0.4f;
     [SerializeField, Range(0f, 1f)] private float deathChanceAfterThreeDays = 0.10f;
 
     [Header("Today's Patients (Read Only)")]
