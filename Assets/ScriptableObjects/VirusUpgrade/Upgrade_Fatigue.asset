@@ -18,6 +18,6 @@ MonoBehaviour:
   basePrice: 15
   lethalityPerDay: 0.02
   dailyInfectionsCap: 0
-  totalInfectionsCap: 3
+  totalInfectionsCap: 5
   requiredDiseaseToCure: {fileID: 0}
   curesNeededToUnlock: 0

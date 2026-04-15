@@ -11,6 +11,7 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private FPSController fpsController;
     [SerializeField] private LookInteractor lookInteractor;
     [SerializeField] private MoneyManager moneyManager;
+    [SerializeField] private ActiveVirusManager activeVirusManager;
 
     [Header("Gameplay UI")]
     [SerializeField] private GameObject notebookPanel;
@@ -129,6 +130,7 @@ public class DiagnosisUI : MonoBehaviour
         }
 
         bool correct = selectedDisease == patient.currentDisease;
+        bool wasPlayerVirus = patient.infectedByPlayerVirus;
 
         if (patient.patientRecord != null)
         {
@@ -147,7 +149,16 @@ public class DiagnosisUI : MonoBehaviour
             if (moneyManager != null)
                 moneyManager.AddMoney(rewardOnCorrectDiagnosis);
 
-            patient.CureDisease();
+            if (wasPlayerVirus)
+            {
+                patient.CurePlayerVirusAndBecomeImmune();
+                if (activeVirusManager != null)
+                    activeVirusManager.NotifyPlayerCuredInfectedNPC(patient);
+            }
+            else
+            {
+                patient.CureDisease();
+            }
 
             SetFeedback($"Correct. +{rewardOnCorrectDiagnosis} coins. Trust increased to {patient.trustInDoctor:0.00}");
         }

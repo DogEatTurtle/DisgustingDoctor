@@ -5,10 +5,13 @@ public class VirusDebugMenu : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerUpgradeInventory inventory;
     [SerializeField] private VirusLabManager lab;
+    [SerializeField] private ActiveVirusManager activeVirusManager;
+    [SerializeField] private DailySystem dailySystem;
 
     [Header("Testing")]
     [SerializeField] private VirusUpgradeSO upgradeToAdd;
     [SerializeField, Range(0, 3)] private int slotIndex = 0;
+    [SerializeField] private NPCActor patientZeroForTesting;
 
     [ContextMenu("Add Upgrade To Inventory")]
     public void AddUpgradeToInventory()
@@ -50,5 +53,27 @@ public class VirusDebugMenu : MonoBehaviour
     {
         if (lab == null) return;
         lab.ClearBlueprint();
+    }
+
+    [ContextMenu("Release Virus On Patient Zero")]
+    public void ReleaseVirus()
+    {
+        if (activeVirusManager == null || lab == null || patientZeroForTesting == null)
+        {
+            Debug.LogWarning("[VirusDebug] Missing references for release.");
+            return;
+        }
+        activeVirusManager.ReleaseVirus(lab.CurrentBlueprint, patientZeroForTesting);
+    }
+
+    [ContextMenu("Force Process New Day")]
+    public void ForceProcessNewDay()
+    {
+        if (dailySystem == null)
+        {
+            Debug.LogWarning("[VirusDebug] Missing DailySystem reference.");
+            return;
+        }
+        dailySystem.ProcessNewDay();
     }
 }

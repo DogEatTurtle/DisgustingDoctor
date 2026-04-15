@@ -8948,6 +8948,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1518803538}
+        m_TargetAssemblyTypeName: DiagnosisUI, Assembly-CSharp
+        m_MethodName: SelectDisease
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 11400000, guid: 5a68dc5406a15f9428f99ee540aa15bd, type: 2}
+          m_ObjectArgumentAssemblyTypeName: DiseaseSO, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1518803539}
         m_TargetAssemblyTypeName: DiseaseButtonSelectionUI, Assembly-CSharp
         m_MethodName: Select
@@ -12917,6 +12929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 113d0e742e6d3cd4890bd1a11903e28f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DailySystem
+  activeVirusManager: {fileID: 2013353026}
   npcs:
   - {fileID: 131736134}
   - {fileID: 115657706}
@@ -12934,9 +12947,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: eca312bbf342b9546a19e9897234fac8, type: 2}
   - {fileID: 11400000, guid: f47c9b24899429f4f97ef401ef8f7f42, type: 2}
   - {fileID: 11400000, guid: b639ca9a7e0c827408d30a4ad598b7ae, type: 2}
+  - {fileID: 11400000, guid: 5a68dc5406a15f9428f99ee540aa15bd, type: 2}
   baseSicknessChance: 0.4
   baseClinicVisitChance: 0.5
   deathChanceAfterThreeDays: 0.1
+  maxPatientsPerDay: 5
   todaysPatients: []
 --- !u!114 &1054002088
 MonoBehaviour:
@@ -17637,6 +17652,7 @@ MonoBehaviour:
   fpsController: {fileID: 1485733404}
   lookInteractor: {fileID: 1485733406}
   moneyManager: {fileID: 1054002089}
+  activeVirusManager: {fileID: 2013353026}
   notebookPanel: {fileID: 1089631660}
   feedbackText: {fileID: 0}
   selectionUI: {fileID: 0}
@@ -23415,6 +23431,7 @@ GameObject:
   - component: {fileID: 2013353023}
   - component: {fileID: 2013353025}
   - component: {fileID: 2013353024}
+  - component: {fileID: 2013353026}
   m_Layer: 0
   m_Name: VirusManager
   m_TagString: Untagged
@@ -23451,8 +23468,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VirusDebugMenu
   inventory: {fileID: 235982048}
   lab: {fileID: 2013353025}
+  activeVirusManager: {fileID: 2013353026}
+  dailySystem: {fileID: 1054002087}
   upgradeToAdd: {fileID: 0}
   slotIndex: 0
+  patientZeroForTesting: {fileID: 0}
 --- !u!114 &2013353025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23472,6 +23492,30 @@ MonoBehaviour:
     - {fileID: 0}
     - {fileID: 0}
     - {fileID: 0}
+--- !u!114 &2013353026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013353022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50748a1c13686f44f94e059fa13a7037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActiveVirusManager
+  dailySystem: {fileID: 1054002087}
+  playerVirusDiseaseSO: {fileID: 11400000, guid: 5a68dc5406a15f9428f99ee540aa15bd, type: 2}
+  activeVirus:
+    virusDiseaseSO: {fileID: 0}
+    combinedSymptoms: []
+    lethalityPerDay: 0
+    dailyInfectionsCap: 0
+    totalInfectionsBudget: 0
+    totalInfectionsUsed: 0
+    currentlyInfected: []
+  sameProfessionWeight: 2
+  sociabilityWeightFactor: 1
 --- !u!1001 &2015207699
 PrefabInstance:
   m_ObjectHideFlags: 0

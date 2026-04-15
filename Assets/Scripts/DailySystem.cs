@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class DailySystem : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] private ActiveVirusManager activeVirusManager;
+
     [Header("NPCs")]
     [SerializeField] private List<NPCActor> npcs = new();
 
@@ -13,6 +16,9 @@ public class DailySystem : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float baseSicknessChance = 0.4f;
     [SerializeField, Range(0f, 1f)] private float baseClinicVisitChance = 0.4f;
     [SerializeField, Range(0f, 1f)] private float deathChanceAfterThreeDays = 0.10f;
+
+    [Header("Clinic")]
+    [SerializeField, Min(1)] private int maxPatientsPerDay = 5;
 
     [Header("Today's Patients (Read Only)")]
     [SerializeField] private List<NPCActor> todaysPatients = new();
@@ -29,18 +35,24 @@ public class DailySystem : MonoBehaviour
 
         todaysPatients.Clear();
 
-        // 1) Quem já estava doente avança um dia
+        // 0) Processar o vírus do jogador primeiro (letalidade diária, propagação, extinção)
+        if (activeVirusManager != null)
+            activeVirusManager.ProcessDailyVirusUpdate();
+
+        // 1) Quem já estava doente avança um dia (exceto infectados pelo vírus, já tratados acima)
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
+            if (npc.infectedByPlayerVirus) continue;
             if (npc.isSick)
                 npc.AdvanceDayWithDisease();
         }
 
-        // 2) Quem ultrapassou o 3.º dia rola morte / cura espontânea
+        // 2) Quem ultrapassou o 3.º dia rola morte / cura espontânea (apenas doenças normais)
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
+            if (npc.infectedByPlayerVirus) continue;
             if (npc.isSick && npc.daysSick > 3)
             {
                 if (Random.value < deathChanceAfterThreeDays)
@@ -64,11 +76,12 @@ public class DailySystem : MonoBehaviour
                 npc.daysImmune--;
         }
 
-        // 4) Atribuir doenças novas a quem está saudável e fora de cooldown
+        // 4) Atribuir doenças novas a quem está saudável, fora de cooldown e não infectado pelo vírus
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
             if (npc.isSick) continue;
+            if (npc.infectedByPlayerVirus) continue;
             if (npc.daysImmune > 0) continue;
 
             float sicknessModifier = GetSicknessTraitModifier(npc);
@@ -88,7 +101,7 @@ public class DailySystem : MonoBehaviour
             npc.willVisitClinic = false;
         }
 
-        // 6) Recolher NPCs vivos e doentes
+        // 6) Recolher NPCs vivos e doentes (inclui infectados pelo vírus)
         List<NPCActor> sickNPCs = new();
         foreach (var npc in npcs)
         {
@@ -119,8 +132,8 @@ public class DailySystem : MonoBehaviour
             return;
         }
 
-        // 8) Máximo de 3 pacientes por dia
-        int targetCount = Mathf.Clamp(willingSickNPCs.Count, 1, 3);
+        // 8) Máximo de maxPatientsPerDay pacientes por dia
+        int targetCount = Mathf.Clamp(willingSickNPCs.Count, 1, maxPatientsPerDay);
 
         for (int i = 0; i < willingSickNPCs.Count; i++)
         {
@@ -180,8 +193,9 @@ public class DailySystem : MonoBehaviour
             if (npc == null) continue;
             string diseaseName = npc.currentDisease ? npc.currentDisease.diseaseName : "None";
             string aliveStr = npc.isAlive ? "Alive" : "DEAD";
+            string virusStr = npc.infectedByPlayerVirus ? " [VIRUS]" : "";
             Debug.Log(
-                $"{npc.npcName} | {aliveStr} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
+                $"{npc.npcName} | {aliveStr}{virusStr} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
                 $"DaysSick: {npc.daysSick} | DaysImmune: {npc.daysImmune} | " +
                 $"Trust: {npc.trustInDoctor:0.00} | WillVisit: {npc.willVisitClinic}"
             );

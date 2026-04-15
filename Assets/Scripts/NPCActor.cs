@@ -20,6 +20,10 @@ public class NPCActor : MonoBehaviour
     public int daysImmune;
     public List<string> currentVisibleSymptoms = new();
 
+    [Header("Player Virus State")]
+    public bool infectedByPlayerVirus;
+    public bool immuneToCurrentPlayerVirus;
+
     [Header("Background")]
     public ProfessionSO profession;
 
@@ -68,6 +72,8 @@ public class NPCActor : MonoBehaviour
         currentDisease = null;
         daysSick = 0;
         daysImmune = 0;
+        infectedByPlayerVirus = false;
+        immuneToCurrentPlayerVirus = false;
         currentVisibleSymptoms.Clear();
         willVisitClinic = false;
         trustInDoctor = 0.5f;
@@ -92,6 +98,7 @@ public class NPCActor : MonoBehaviour
         currentDisease = null;
         isSick = false;
         daysSick = 0;
+        infectedByPlayerVirus = false;
         currentVisibleSymptoms.Clear();
         daysImmune = 1;
 
@@ -117,8 +124,43 @@ public class NPCActor : MonoBehaviour
         daysSick = 0;
         currentVisibleSymptoms.Clear();
         daysImmune = 0;
+        infectedByPlayerVirus = false;
         willVisitClinic = false;
         patientRecord.status = PatientRecordData.HealthStatus.Deceased;
+    }
+
+    public void CatchPlayerVirus(DiseaseSO virusDiseaseSO, List<string> virusSymptoms)
+    {
+        if (!isAlive || virusDiseaseSO == null) return;
+
+        currentDisease = virusDiseaseSO;
+        isSick = true;
+        daysSick = 1;
+        infectedByPlayerVirus = true;
+        patientRecord.status = PatientRecordData.HealthStatus.Sick;
+
+        currentVisibleSymptoms.Clear();
+        if (virusSymptoms != null)
+            currentVisibleSymptoms.AddRange(virusSymptoms);
+    }
+
+    public void CurePlayerVirusAndBecomeImmune()
+    {
+        currentDisease = null;
+        isSick = false;
+        daysSick = 0;
+        infectedByPlayerVirus = false;
+        immuneToCurrentPlayerVirus = true;
+        currentVisibleSymptoms.Clear();
+        daysImmune = 1;
+
+        if (isAlive)
+            patientRecord.status = PatientRecordData.HealthStatus.Healthy;
+    }
+
+    public void ResetPlayerVirusImmunity()
+    {
+        immuneToCurrentPlayerVirus = false;
     }
 
     private void BuildVisibleSymptomsForDayOne()
