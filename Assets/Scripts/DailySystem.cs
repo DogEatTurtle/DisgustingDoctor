@@ -5,6 +5,7 @@ public class DailySystem : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private ActiveVirusManager activeVirusManager;
+    [SerializeField] private BlackMarketShopManager blackMarketShop;
 
     [Header("NPCs")]
     [SerializeField] private List<NPCActor> npcs = new();
@@ -100,6 +101,10 @@ public class DailySystem : MonoBehaviour
             if (npc == null || !npc.isAlive) continue;
             npc.willVisitClinic = false;
         }
+
+        // Refresh black market offers for the new day (sempre, independentemente de haver pacientes)
+        if (blackMarketShop != null)
+            blackMarketShop.RefreshDailyOffers();
 
         // 6) Recolher NPCs vivos e doentes (inclui infectados pelo vírus)
         List<NPCActor> sickNPCs = new();

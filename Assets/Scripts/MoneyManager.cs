@@ -17,8 +17,26 @@ public class MoneyManager : MonoBehaviour
     {
         currentMoney += amount;
         UpdateMoneyUI();
-
         Debug.Log($"Money gained: {amount} | Total money: {currentMoney}");
+    }
+
+    public bool HasEnough(int amount)
+    {
+        return currentMoney >= amount;
+    }
+
+    public bool SpendMoney(int amount)
+    {
+        if (!HasEnough(amount))
+        {
+            Debug.LogWarning($"Not enough money. Have: {currentMoney}, need: {amount}");
+            return false;
+        }
+
+        currentMoney -= amount;
+        UpdateMoneyUI();
+        Debug.Log($"Money spent: {amount} | Total money: {currentMoney}");
+        return true;
     }
 
     private void UpdateMoneyUI()

@@ -19,6 +19,8 @@ public class LookInteractor : MonoBehaviour
     private DiagnosisInteractable currentDiagnosis;
     private ComputerInteractable currentComputer;
     private PatientRecordsComputerInteractable currentPatientRecordsComputer;
+    private BlackMarketVendorInteractable currentVendor;
+    private BlackMarketSpreaderInteractable currentSpreader;
 
     private void Start()
     {
@@ -44,6 +46,10 @@ public class LookInteractor : MonoBehaviour
                 currentComputer.Interact();
             else if (currentPatientRecordsComputer != null)
                 currentPatientRecordsComputer.Interact();
+            else if (currentVendor != null)
+                currentVendor.Interact();
+            else if (currentSpreader != null)
+                currentSpreader.Interact();
         }
     }
 
@@ -52,8 +58,6 @@ public class LookInteractor : MonoBehaviour
         Vector3 origin = rayOrigin.position;
         Vector3 direction = rayOrigin.forward;
 
-        RaycastHit hit;
-
         Highlightable foundHighlight = null;
         DoorInteractable foundDoor = null;
         NPCInteractable foundNPC = null;
@@ -61,8 +65,10 @@ public class LookInteractor : MonoBehaviour
         DiagnosisInteractable foundDiagnosis = null;
         ComputerInteractable foundComputer = null;
         PatientRecordsComputerInteractable foundPatientRecordsComputer = null;
+        BlackMarketVendorInteractable foundVendor = null;
+        BlackMarketSpreaderInteractable foundSpreader = null;
 
-        if (Physics.Raycast(origin, direction, out hit, maxDistance, interactLayers))
+        if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, interactLayers))
         {
             foundHighlight = hit.collider.GetComponentInParent<Highlightable>();
             foundDoor = hit.collider.GetComponentInParent<DoorInteractable>();
@@ -71,6 +77,8 @@ public class LookInteractor : MonoBehaviour
             foundDiagnosis = hit.collider.GetComponentInParent<DiagnosisInteractable>();
             foundComputer = hit.collider.GetComponentInParent<ComputerInteractable>();
             foundPatientRecordsComputer = hit.collider.GetComponentInParent<PatientRecordsComputerInteractable>();
+            foundVendor = hit.collider.GetComponentInParent<BlackMarketVendorInteractable>();
+            foundSpreader = hit.collider.GetComponentInParent<BlackMarketSpreaderInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -90,6 +98,8 @@ public class LookInteractor : MonoBehaviour
         currentDiagnosis = foundDiagnosis;
         currentComputer = foundComputer;
         currentPatientRecordsComputer = foundPatientRecordsComputer;
+        currentVendor = foundVendor;
+        currentSpreader = foundSpreader;
 
         if (hoverPromptText != null)
         {
@@ -99,7 +109,9 @@ public class LookInteractor : MonoBehaviour
                 currentSeat != null ||
                 currentDiagnosis != null ||
                 currentComputer != null ||
-                currentPatientRecordsComputer != null;
+                currentPatientRecordsComputer != null ||
+                currentVendor != null ||
+                currentSpreader != null;
 
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
@@ -119,6 +131,8 @@ public class LookInteractor : MonoBehaviour
         currentDiagnosis = null;
         currentComputer = null;
         currentPatientRecordsComputer = null;
+        currentVendor = null;
+        currentSpreader = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);

@@ -7,6 +7,7 @@ public class PatientRecordEntryUI : MonoBehaviour
 
     private NPCActor npc;
     private PatientRecordsUI patientRecordsUI;
+    private System.Action customClickAction;
 
     public void Setup(NPCActor targetNPC, PatientRecordsUI ui)
     { 
@@ -18,9 +19,20 @@ public class PatientRecordEntryUI : MonoBehaviour
             nameText.text = npc != null ? npc.npcName : "Unknown";
     }
 
+    public void SetCustomClickAction(System.Action action)
+    {
+        customClickAction = action;
+    }
+
     public void OnClicked()
     {
-        
+        if (customClickAction != null)
+        {
+            customClickAction.Invoke();
+            return;
+        }
+
+        Debug.Log($"[Entry] Clicked npc={(npc != null ? npc.npcName : "NULL")}");
         if (npc == null || patientRecordsUI == null) return;
         patientRecordsUI.OpenPatientRecord(npc);
     }

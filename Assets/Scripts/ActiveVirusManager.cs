@@ -62,6 +62,12 @@ public class ActiveVirusManager : MonoBehaviour
             totalInfectionsUsed = 0
         };
 
+        if (patientZero.isSick && !patientZero.infectedByPlayerVirus)
+        {
+            Debug.Log($"[Virus] Patient zero {patientZero.npcName} was sick with {patientZero.currentDisease?.diseaseName}. Virus replaces it.");
+            patientZero.CureDisease();
+        }
+
         // Patient zero counts toward the total budget
         InfectNPC(patientZero);
 
@@ -129,6 +135,7 @@ public class ActiveVirusManager : MonoBehaviour
         if (activeVirus.dailyInfectionsCap <= 0) return;
         if (activeVirus.currentlyInfected.Count == 0) return;
         if (dailySystem == null) return;
+        
 
         // Build candidate list: alive, not infected by virus, not immune to virus, not currently sick with virus
         var candidates = new List<NPCActor>();
@@ -148,6 +155,7 @@ public class ActiveVirusManager : MonoBehaviour
             if (!npc.isAlive) continue;
             if (npc.infectedByPlayerVirus) continue;
             if (npc.immuneToCurrentPlayerVirus) continue;
+            if (npc.isSick) continue;
 
             float weight = 1f;
 

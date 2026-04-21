@@ -66,4 +66,17 @@ public class VirusLabManager : MonoBehaviour
             $"Complete: {currentBlueprint.IsComplete}"
         );
     }
+
+    public void ConsumeBlueprint()
+    {
+        for (int i = 0; i < VirusBlueprint.SlotCount; i++)
+        {
+            var upgrade = currentBlueprint.Slots[i];
+            if (upgrade != null && playerInventory != null)
+                playerInventory.RemoveUpgrade(upgrade);
+        }
+
+        currentBlueprint.ClearAll();
+        Debug.Log("[Lab] Blueprint consumed. Upgrades returned to market pool.");
+    }
 }
