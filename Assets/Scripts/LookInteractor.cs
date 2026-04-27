@@ -21,6 +21,7 @@ public class LookInteractor : MonoBehaviour
     private PatientRecordsComputerInteractable currentPatientRecordsComputer;
     private BlackMarketVendorInteractable currentVendor;
     private BlackMarketSpreaderInteractable currentSpreader;
+    private LabBenchInteractable currentLabBench;
 
     private void Start()
     {
@@ -50,6 +51,8 @@ public class LookInteractor : MonoBehaviour
                 currentVendor.Interact();
             else if (currentSpreader != null)
                 currentSpreader.Interact();
+            else if (currentLabBench != null)
+                currentLabBench.Interact();
         }
     }
 
@@ -67,6 +70,7 @@ public class LookInteractor : MonoBehaviour
         PatientRecordsComputerInteractable foundPatientRecordsComputer = null;
         BlackMarketVendorInteractable foundVendor = null;
         BlackMarketSpreaderInteractable foundSpreader = null;
+        LabBenchInteractable foundLabBench = null;
 
         if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, interactLayers))
         {
@@ -79,6 +83,7 @@ public class LookInteractor : MonoBehaviour
             foundPatientRecordsComputer = hit.collider.GetComponentInParent<PatientRecordsComputerInteractable>();
             foundVendor = hit.collider.GetComponentInParent<BlackMarketVendorInteractable>();
             foundSpreader = hit.collider.GetComponentInParent<BlackMarketSpreaderInteractable>();
+            foundLabBench = hit.collider.GetComponentInParent<LabBenchInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -100,6 +105,7 @@ public class LookInteractor : MonoBehaviour
         currentPatientRecordsComputer = foundPatientRecordsComputer;
         currentVendor = foundVendor;
         currentSpreader = foundSpreader;
+        currentLabBench = foundLabBench;
 
         if (hoverPromptText != null)
         {
@@ -111,7 +117,8 @@ public class LookInteractor : MonoBehaviour
                 currentComputer != null ||
                 currentPatientRecordsComputer != null ||
                 currentVendor != null ||
-                currentSpreader != null;
+                currentSpreader != null ||
+                currentLabBench != null;
 
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
@@ -133,6 +140,7 @@ public class LookInteractor : MonoBehaviour
         currentPatientRecordsComputer = null;
         currentVendor = null;
         currentSpreader = null;
+        currentLabBench = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);
