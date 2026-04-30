@@ -14,7 +14,13 @@ public class ActiveVirus
 
     public List<NPCActor> currentlyInfected = new();
 
-    public bool IsActive => currentlyInfected.Count > 0;
+    // Patient zero queued for infection on the next day.
+    // While the virus is "in transit", this NPC is immune to natural death
+    // from any disease they currently have, and the virus has not yet
+    // started propagating.
+    public NPCActor pendingPatientZero;
+
+    public bool IsActive => currentlyInfected.Count > 0 || pendingPatientZero != null;
     public int RemainingTotalBudget => Mathf.Max(0, totalInfectionsBudget - totalInfectionsUsed);
 
     public void RegisterInfection(NPCActor npc)

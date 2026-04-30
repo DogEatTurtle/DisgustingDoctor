@@ -49,11 +49,13 @@ public class DailySystem : MonoBehaviour
                 npc.AdvanceDayWithDisease();
         }
 
-        // 2) Quem ultrapassou o 3.º dia rola morte / cura espontânea (apenas doenças normais)
+        // 2) Quem ultrapassou o 3.º dia rola morte / cura espontânea (apenas doenças normais).
+        // O pendingPatientZero do vírus está protegido durante o dia da transição.
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
             if (npc.infectedByPlayerVirus) continue;
+            if (activeVirusManager != null && activeVirusManager.IsPendingPatientZero(npc)) continue;
             if (npc.isSick && npc.daysSick > 3)
             {
                 if (Random.value < deathChanceAfterThreeDays)
@@ -84,6 +86,7 @@ public class DailySystem : MonoBehaviour
             if (npc.isSick) continue;
             if (npc.infectedByPlayerVirus) continue;
             if (npc.daysImmune > 0) continue;
+            if (activeVirusManager != null && activeVirusManager.IsPendingPatientZero(npc)) continue;
 
             float sicknessModifier = GetSicknessTraitModifier(npc);
             float finalSicknessChance = Mathf.Clamp01(baseSicknessChance * sicknessModifier);
@@ -199,8 +202,9 @@ public class DailySystem : MonoBehaviour
             string diseaseName = npc.currentDisease ? npc.currentDisease.diseaseName : "None";
             string aliveStr = npc.isAlive ? "Alive" : "DEAD";
             string virusStr = npc.infectedByPlayerVirus ? " [VIRUS]" : "";
+            string pendingStr = (activeVirusManager != null && activeVirusManager.IsPendingPatientZero(npc)) ? " [PENDING_VIRUS]" : "";
             Debug.Log(
-                $"{npc.npcName} | {aliveStr}{virusStr} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
+                $"{npc.npcName} | {aliveStr}{virusStr}{pendingStr} | Sick: {npc.isSick} | Disease: {diseaseName} | " +
                 $"DaysSick: {npc.daysSick} | DaysImmune: {npc.daysImmune} | " +
                 $"Trust: {npc.trustInDoctor:0.00} | WillVisit: {npc.willVisitClinic}"
             );

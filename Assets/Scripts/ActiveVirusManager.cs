@@ -20,6 +20,11 @@ public class ActiveVirusManager : MonoBehaviour
     public bool HasActiveVirus => activeVirus != null && activeVirus.IsActive;
     public ActiveVirus CurrentVirus => activeVirus;
 
+    public bool IsPendingPatientZero(NPCActor npc)
+    {
+        return activeVirus != null && activeVirus.pendingPatientZero == npc && npc != null;
+    }
+
     public bool ReleaseVirus(VirusBlueprint blueprint, NPCActor patientZero)
     {
         if (HasActiveVirus)
@@ -59,23 +64,16 @@ public class ActiveVirusManager : MonoBehaviour
             lethalityPerDay = blueprint.TotalLethalityPerDay,
             dailyInfectionsCap = blueprint.TotalDailyInfectionsCap,
             totalInfectionsBudget = blueprint.TotalInfectionsCap,
-            totalInfectionsUsed = 0
+            totalInfectionsUsed = 0,
+            pendingPatientZero = patientZero
         };
 
-        if (patientZero.isSick && !patientZero.infectedByPlayerVirus)
-        {
-            Debug.Log($"[Virus] Patient zero {patientZero.npcName} was sick with {patientZero.currentDisease?.diseaseName}. Virus replaces it.");
-            patientZero.CureDisease();
-        }
-
-        // Patient zero counts toward the total budget
-        InfectNPC(patientZero);
-
         Debug.Log(
-            $"[Virus] Released! Patient zero: {patientZero.npcName} | " +
+            $"[Virus] Released! Patient zero queued: {patientZero.npcName} | " +
             $"Lethality/day: {activeVirus.lethalityPerDay:0.00} | " +
             $"Daily cap: {activeVirus.dailyInfectionsCap} | " +
-            $"Total budget: {activeVirus.totalInfectionsBudget}"
+            $"Total budget: {activeVirus.totalInfectionsBudget} | " +
+            $"Will manifest on the next day."
         );
 
         return true;
@@ -83,15 +81,64 @@ public class ActiveVirusManager : MonoBehaviour
 
     public void ProcessDailyVirusUpdate()
     {
-        if (!HasActiveVirus) return;
+        if (activeVirus == null) return;
+
+        // 0. Manifest the virus on the pending patient zero, if any.
+        // This happens BEFORE lethality/propagation, so on the day of manifestation
+        // the patient zero is freshly infected and does not propagate yet.
+        bool manifestedThisTurn = false;
+        if (activeVirus.pendingPatientZero != null)
+        {
+            var pz = activeVirus.pendingPatientZero;
+            activeVirus.pendingPatientZero = null;
+
+            if (pz != null && pz.isAlive)
+            {
+                // Cure any prior disease silently (player virus takes over)
+                if (pz.isSick && !pz.infectedByPlayerVirus)
+                {
+                    Debug.Log($"[Virus] {pz.npcName} was sick with {pz.currentDisease?.diseaseName}. Virus takes over.");
+                    pz.CureDisease();
+                }
+
+                InfectNPC(pz);
+                manifestedThisTurn = true;
+                Debug.Log($"[Virus] {pz.npcName} now shows symptoms of the virus.");
+            }
+            else
+            {
+                Debug.Log("[Virus] Pending patient zero is no longer valid (dead or null). Virus did not manifest.");
+            }
+        }
+
+        if (!HasActiveVirus)
+        {
+            Debug.Log("[Virus] The virus has gone extinct (no infected NPCs after manifestation).");
+            activeVirus = null;
+            return;
+        }
 
         // 1. Roll lethality for each currently infected NPC
         var diedThisDay = new List<NPCActor>();
         var survivedAndCured = new List<NPCActor>();
+        var freshlyManifestedThisTurn = new HashSet<NPCActor>();
+        if (manifestedThisTurn)
+        {
+            foreach (var infected in activeVirus.currentlyInfected)
+            {
+                // The patient zero was just infected this turn (daysSick=1).
+                // Skip lethality and daysSick++ for them on this first turn.
+                if (infected != null && infected.daysSick == 1)
+                    freshlyManifestedThisTurn.Add(infected);
+            }
+        }
 
         foreach (var npc in activeVirus.currentlyInfected)
         {
             if (npc == null || !npc.isAlive) continue;
+
+            // NPCs that just manifested this turn don't get lethality/daysSick++
+            if (freshlyManifestedThisTurn.Contains(npc)) continue;
 
             // Lethality roll first
             if (Random.value < activeVirus.lethalityPerDay)
@@ -117,11 +164,13 @@ public class ActiveVirusManager : MonoBehaviour
         foreach (var npc in diedThisDay) activeVirus.UnregisterInfection(npc);
         foreach (var npc in survivedAndCured) activeVirus.UnregisterInfection(npc);
 
-        // 2. Propagate to new candidates
-        PropagateToNewVictims();
+        // 2. Propagate to new candidates — but NOT on the manifestation turn.
+        // The patient zero gets one full day of incubation before infecting others.
+        if (!manifestedThisTurn)
+            PropagateToNewVictims();
 
         // 3. Check extinction
-        if (!activeVirus.IsActive)
+        if (!HasActiveVirus)
         {
             Debug.Log("[Virus] The virus has gone extinct (no more infected NPCs).");
             activeVirus = null;
@@ -135,7 +184,7 @@ public class ActiveVirusManager : MonoBehaviour
         if (activeVirus.dailyInfectionsCap <= 0) return;
         if (activeVirus.currentlyInfected.Count == 0) return;
         if (dailySystem == null) return;
-        
+
 
         // Build candidate list: alive, not infected by virus, not immune to virus, not currently sick with virus
         var candidates = new List<NPCActor>();
@@ -223,7 +272,7 @@ public class ActiveVirusManager : MonoBehaviour
 
         activeVirus.UnregisterInfection(npc);
 
-        if (!activeVirus.IsActive)
+        if (!HasActiveVirus)
         {
             Debug.Log("[Virus] The virus has gone extinct (last infected was cured by the player).");
             activeVirus = null;

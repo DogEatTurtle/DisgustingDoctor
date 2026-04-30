@@ -16,6 +16,7 @@ public class BlackMarketSpreaderUI : MonoBehaviour
     [SerializeField] private int releasePrice = 200;
 
     [Header("Panels")]
+    [SerializeField] private GameObject spreaderPanel;
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private GameObject victimListPanel;
     [SerializeField] private GameObject victimDetailPanel;
@@ -44,6 +45,7 @@ public class BlackMarketSpreaderUI : MonoBehaviour
 
     private void Start()
     {
+        if (spreaderPanel != null) spreaderPanel.SetActive(false);
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
         if (victimListPanel != null) victimListPanel.SetActive(false);
         if (victimDetailPanel != null) victimDetailPanel.SetActive(false);
@@ -65,6 +67,8 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         isOpen = true;
         selectedVictim = null;
 
+        if (spreaderPanel != null) spreaderPanel.SetActive(true);
+
         if (fpsController != null) fpsController.enabled = false;
         if (lookInteractor != null) lookInteractor.enabled = false;
 
@@ -82,6 +86,7 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
         if (victimListPanel != null) victimListPanel.SetActive(false);
         if (victimDetailPanel != null) victimDetailPanel.SetActive(false);
+        if (spreaderPanel != null) spreaderPanel.SetActive(false);
 
         if (fpsController != null) fpsController.enabled = true;
         if (lookInteractor != null) lookInteractor.enabled = true;
@@ -124,6 +129,19 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         }
 
         ShowVictimList();
+    }
+
+    // Called by the "No, I don't think I will" button in the dialogue panel
+    public void OnDeclineDialogueClicked()
+    {
+        CloseAll();
+    }
+
+    // Called by the "Back" button in the victim list panel
+    public void OnBackToDialogueClicked()
+    {
+        selectedVictim = null;
+        ShowDialogue();
     }
 
     private void ShowVictimList()
