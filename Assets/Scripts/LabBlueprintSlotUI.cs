@@ -84,11 +84,25 @@ public class LabBlueprintSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         string stats = "";
         if (upgrade.lethalityPerDay != 0)
-            stats += $"Lethality: +{upgrade.lethalityPerDay * 100f:0}%/day\n";
+            stats += $"Lethality: {FormatSignedPercent(upgrade.lethalityPerDay)}/day\n";
         if (upgrade.dailyInfectionsCap != 0)
-            stats += $"Daily spread: +{upgrade.dailyInfectionsCap}\n";
+            stats += $"Daily spread: {FormatSignedInt(upgrade.dailyInfectionsCap)}\n";
         if (upgrade.totalInfectionsCap != 0)
-            stats += $"Total spread: +{upgrade.totalInfectionsCap}";
+            stats += $"Total spread: {FormatSignedInt(upgrade.totalInfectionsCap)}";
         return stats.TrimEnd();
+    }
+
+    private static string FormatSignedPercent(float value)
+    {
+        return value >= 0
+            ? $"+{value * 100f:0}%"
+            : $"{value * 100f:0}%";
+    }
+
+    private static string FormatSignedInt(int value)
+    {
+        return value >= 0
+            ? $"+{value}"
+            : value.ToString();
     }
 }

@@ -9,6 +9,7 @@ public class BlackMarketShopManager : MonoBehaviour
     [Header("Dependencies")]
     [SerializeField] private PlayerUpgradeInventory playerInventory;
     [SerializeField] private MoneyManager moneyManager;
+    [SerializeField] private DiagnosisCounter diagnosisCounter;
 
     [Header("Today's Offers (Read Only)")]
     [SerializeField] private List<VirusUpgradeSO> todaysOffers = new();
@@ -91,17 +92,23 @@ public class BlackMarketShopManager : MonoBehaviour
             if (playerInventory != null && playerInventory.Contains(upgrade))
                 continue;
 
-            // Skip rare locked upgrades that haven't been unlocked yet
-            if (upgrade.IsRareLocked)
-            {
-                // TODO: check if player has unlocked this via diagnosis count
-                // For now, skip all locked rares
+            // Rare upgrades require enough correct diagnoses of a specific disease
+            if (upgrade.IsRareLocked && !IsRareUnlocked(upgrade))
                 continue;
-            }
 
             pool.Add(upgrade);
         }
 
         return pool;
+    }
+
+    private bool IsRareUnlocked(VirusUpgradeSO upgrade)
+    {
+        if (upgrade == null) return false;
+        if (!upgrade.IsRareLocked) return true;
+        if (diagnosisCounter == null) return false;
+
+        int count = diagnosisCounter.GetCount(upgrade.requiredDiseaseToCure);
+        return count >= upgrade.curesNeededToUnlock;
     }
 }

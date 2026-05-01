@@ -7,8 +7,16 @@ public class BlackMarketCardSlotUI : MonoBehaviour
     [SerializeField] private GameObject cardContent;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text statsText;
+    [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private Button buyButton;
+
+    [Header("Rarity Background")]
+    [Tooltip("Image, RawImage or any Graphic whose color changes based on the upgrade's rarity.")]
+    [SerializeField] private Graphic rarityBackground;
+
+    [SerializeField] private Color commonColor = new Color(0.40f, 0.80f, 0.40f, 1f); // green
+    [SerializeField] private Color rareColor = new Color(0.30f, 0.55f, 0.95f, 1f);   // blue
 
     private BlackMarketShopUI shopUI;
     private int cardIndex;
@@ -28,13 +36,24 @@ public class BlackMarketCardSlotUI : MonoBehaviour
         {
             string stats = "";
             if (upgrade.lethalityPerDay != 0)
-                stats += $"Lethality: +{upgrade.lethalityPerDay * 100f:0}%/day\n";
+                stats += $"Lethality: {FormatSignedPercent(upgrade.lethalityPerDay)}/day\n";
             if (upgrade.dailyInfectionsCap != 0)
-                stats += $"Daily spread: +{upgrade.dailyInfectionsCap}\n";
+                stats += $"Daily spread: {FormatSignedInt(upgrade.dailyInfectionsCap)}\n";
             if (upgrade.totalInfectionsCap != 0)
-                stats += $"Total spread: +{upgrade.totalInfectionsCap}";
+                stats += $"Total spread: {FormatSignedInt(upgrade.totalInfectionsCap)}";
             statsText.text = stats.TrimEnd();
         }
+
+        Color rarityColor = upgrade.rarity == VirusUpgradeRarity.Rare ? rareColor : commonColor;
+
+        if (rarityText != null)
+        {
+            rarityText.text = upgrade.rarity.ToString();
+            rarityText.color = rarityColor;
+        }
+
+        if (rarityBackground != null)
+            rarityBackground.color = rarityColor;
 
         if (priceText != null)
             priceText.text = $"{upgrade.basePrice} coins";
@@ -54,5 +73,19 @@ public class BlackMarketCardSlotUI : MonoBehaviour
 
         if (buyButton != null)
             buyButton.interactable = false;
+    }
+
+    private static string FormatSignedPercent(float value)
+    {
+        return value >= 0
+            ? $"+{value * 100f:0}%"
+            : $"{value * 100f:0}%";
+    }
+
+    private static string FormatSignedInt(int value)
+    {
+        return value >= 0
+            ? $"+{value}"
+            : value.ToString();
     }
 }

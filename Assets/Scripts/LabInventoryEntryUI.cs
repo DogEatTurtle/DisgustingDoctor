@@ -40,12 +40,26 @@ public class LabInventoryEntryUI : MonoBehaviour
         var parts = new System.Collections.Generic.List<string>();
 
         if (upgrade.lethalityPerDay != 0)
-            parts.Add($"Leth +{upgrade.lethalityPerDay * 100f:0}%/day");
+            parts.Add($"Leth {FormatSignedPercent(upgrade.lethalityPerDay)}/day");
         if (upgrade.dailyInfectionsCap != 0)
-            parts.Add($"Daily +{upgrade.dailyInfectionsCap}");
+            parts.Add($"Daily {FormatSignedInt(upgrade.dailyInfectionsCap)}");
         if (upgrade.totalInfectionsCap != 0)
-            parts.Add($"Total +{upgrade.totalInfectionsCap}");
+            parts.Add($"Total {FormatSignedInt(upgrade.totalInfectionsCap)}");
 
         return string.Join(" | ", parts);
+    }
+
+    private static string FormatSignedPercent(float value)
+    {
+        return value >= 0
+            ? $"+{value * 100f:0}%"
+            : $"{value * 100f:0}%"; // negative numbers already include the sign
+    }
+
+    private static string FormatSignedInt(int value)
+    {
+        return value >= 0
+            ? $"+{value}"
+            : value.ToString();
     }
 }

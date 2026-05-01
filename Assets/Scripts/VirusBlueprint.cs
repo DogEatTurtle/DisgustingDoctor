@@ -70,7 +70,7 @@ public class VirusBlueprint
             float total = 0f;
             for (int i = 0; i < SlotCount; i++)
                 if (slots[i] != null) total += slots[i].lethalityPerDay;
-            return Mathf.Clamp01(total);
+            return Mathf.Clamp(total, 0f, 1f);
         }
     }
 

@@ -12,6 +12,7 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private LookInteractor lookInteractor;
     [SerializeField] private MoneyManager moneyManager;
     [SerializeField] private ActiveVirusManager activeVirusManager;
+    [SerializeField] private DiagnosisCounter diagnosisCounter;
 
     [Header("Gameplay UI")]
     [SerializeField] private GameObject notebookPanel;
@@ -21,7 +22,14 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private DiseaseButtonSelectionUI selectionUI;
 
     [Header("Economy")]
+    [Tooltip("Base reward for any correct diagnosis (normal disease or player virus).")]
     [SerializeField] private int rewardOnCorrectDiagnosis = 20;
+
+    [Tooltip("Extra fixed reward when curing the player's virus (on top of base + lethality).")]
+    [SerializeField] private int playerVirusBonus = 30;
+
+    [Tooltip("Multiplier applied to the virus's lethalityPerDay to compute the lethality bonus per cure.")]
+    [SerializeField] private float lethalityRewardMultiplier = 400f;
 
     [Header("Trust")]
     [SerializeField] private float trustGainOnCorrect = 0.10f;
@@ -131,6 +139,7 @@ public class DiagnosisUI : MonoBehaviour
 
         bool correct = selectedDisease == patient.currentDisease;
         bool wasPlayerVirus = patient.infectedByPlayerVirus;
+        DiseaseSO diagnosedDisease = patient.currentDisease;
 
         if (patient.patientRecord != null)
         {
@@ -146,8 +155,14 @@ public class DiagnosisUI : MonoBehaviour
         {
             patient.AdjustTrust(trustGainOnCorrect);
 
+            int totalReward = ComputeReward(wasPlayerVirus);
+
             if (moneyManager != null)
-                moneyManager.AddMoney(rewardOnCorrectDiagnosis);
+                moneyManager.AddMoney(totalReward);
+
+            // Register correct diagnosis for rare upgrade unlocks (skips player virus / unknown virus)
+            if (diagnosisCounter != null && diagnosedDisease != null)
+                diagnosisCounter.RegisterCorrectDiagnosis(diagnosedDisease);
 
             if (wasPlayerVirus)
             {
@@ -160,7 +175,7 @@ public class DiagnosisUI : MonoBehaviour
                 patient.CureDisease();
             }
 
-            SetFeedback($"Correct. +{rewardOnCorrectDiagnosis} coins. Trust increased to {patient.trustInDoctor:0.00}");
+            SetFeedback($"Correct. +{totalReward} coins. Trust increased to {patient.trustInDoctor:0.00}");
         }
         else
         {
@@ -187,6 +202,24 @@ public class DiagnosisUI : MonoBehaviour
             conversationManager.CloseConversation();
 
         consultationManager.EndConsultation();
+    }
+
+    private int ComputeReward(bool wasPlayerVirus)
+    {
+        int reward = rewardOnCorrectDiagnosis;
+
+        if (wasPlayerVirus && activeVirusManager != null && activeVirusManager.HasActiveVirus)
+        {
+            int lethalityBonus = Mathf.RoundToInt(activeVirusManager.CurrentVirus.lethalityPerDay * lethalityRewardMultiplier);
+            reward += playerVirusBonus + lethalityBonus;
+
+            Debug.Log(
+                $"[Diagnosis] Player virus reward: {rewardOnCorrectDiagnosis} base + {playerVirusBonus} virus bonus + " +
+                $"{lethalityBonus} lethality bonus = {reward} coins."
+            );
+        }
+
+        return reward;
     }
 
     private void ShowResultImage(bool correct)
