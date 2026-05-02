@@ -24,6 +24,14 @@ public class NPCActor : MonoBehaviour
     public bool infectedByPlayerVirus;
     public bool immuneToCurrentPlayerVirus;
 
+    // The full combined symptom list of the active virus this NPC has,
+    // stored so we can reconstruct currentVisibleSymptoms each day based on
+    // revealedSymptomIndices.
+    [SerializeField] private List<string> virusFullSymptomList = new();
+
+    // Indices into virusFullSymptomList that this NPC currently reveals via LLM.
+    [SerializeField] private List<int> revealedSymptomIndices = new();
+
     [Header("Background")]
     public ProfessionSO profession;
 
@@ -75,11 +83,15 @@ public class NPCActor : MonoBehaviour
         infectedByPlayerVirus = false;
         immuneToCurrentPlayerVirus = false;
         currentVisibleSymptoms.Clear();
+        virusFullSymptomList.Clear();
+        revealedSymptomIndices.Clear();
         willVisitClinic = false;
         trustInDoctor = 0.5f;
 
         patientRecord.InitializeWithNameOnly(npcName);
     }
+
+    // ---------------- Normal disease ----------------
 
     public void CatchDisease(DiseaseSO disease)
     {
@@ -100,6 +112,8 @@ public class NPCActor : MonoBehaviour
         daysSick = 0;
         infectedByPlayerVirus = false;
         currentVisibleSymptoms.Clear();
+        virusFullSymptomList.Clear();
+        revealedSymptomIndices.Clear();
         daysImmune = 1;
 
         if (isAlive)
@@ -123,13 +137,20 @@ public class NPCActor : MonoBehaviour
         currentDisease = null;
         daysSick = 0;
         currentVisibleSymptoms.Clear();
+        virusFullSymptomList.Clear();
+        revealedSymptomIndices.Clear();
         daysImmune = 0;
         infectedByPlayerVirus = false;
         willVisitClinic = false;
         patientRecord.status = PatientRecordData.HealthStatus.Deceased;
     }
 
-    public void CatchPlayerVirus(DiseaseSO virusDiseaseSO, List<string> virusSymptoms)
+    // ---------------- Player / External virus ----------------
+
+    // Called by ActiveVirusManager.InfectNPC. Receives the full symptom list
+    // and the initial 2 indices to reveal. The NPC stores both, and rebuilds
+    // currentVisibleSymptoms accordingly.
+    public void CatchPlayerVirus(DiseaseSO virusDiseaseSO, List<string> virusSymptoms, List<int> initialRevealedIndices)
     {
         if (!isAlive || virusDiseaseSO == null) return;
 
@@ -139,10 +160,84 @@ public class NPCActor : MonoBehaviour
         infectedByPlayerVirus = true;
         patientRecord.status = PatientRecordData.HealthStatus.Sick;
 
-        currentVisibleSymptoms.Clear();
+        virusFullSymptomList.Clear();
         if (virusSymptoms != null)
-            currentVisibleSymptoms.AddRange(virusSymptoms);
+            virusFullSymptomList.AddRange(virusSymptoms);
+
+        revealedSymptomIndices.Clear();
+        if (initialRevealedIndices != null)
+            revealedSymptomIndices.AddRange(initialRevealedIndices);
+
+        RebuildVisibleSymptomsFromIndices();
     }
+
+    // Called by the daily virus update (ActiveVirusManager) for each
+    // currently infected NPC, after advancing daysSick. Adds one new
+    // symptom index if appropriate, capped per the curve:
+    //   Player virus:   day 1 -> 2, day 2 -> 3, day 3 -> 3, day 4 -> 4
+    //   External virus: day 1 -> 2, day 2 -> 2, day 3 -> 3, day 4 -> 3
+    public void AdvanceVirusDay(bool isExternalVirus)
+    {
+        if (!isAlive || !infectedByPlayerVirus) return;
+        if (virusFullSymptomList == null || virusFullSymptomList.Count == 0) return;
+
+        int targetCount = ComputeTargetRevealedCount(daysSick, isExternalVirus, virusFullSymptomList.Count);
+
+        // Add new indices until we reach target
+        while (revealedSymptomIndices.Count < targetCount)
+        {
+            int newIndex = PickUnusedSymptomIndex();
+            if (newIndex < 0) break; // no more unused indices
+            revealedSymptomIndices.Add(newIndex);
+        }
+
+        RebuildVisibleSymptomsFromIndices();
+    }
+
+    private static int ComputeTargetRevealedCount(int day, bool isExternal, int totalSymptoms)
+    {
+        // Curve: which day reveals how many symptoms
+        // Player:   2, 3, 3, 4
+        // External: 2, 2, 3, 3
+        int target;
+        if (isExternal)
+        {
+            if (day <= 2) target = 2;
+            else target = 3;
+        }
+        else
+        {
+            if (day <= 1) target = 2;
+            else if (day <= 3) target = 3;
+            else target = 4;
+        }
+        return Mathf.Min(target, totalSymptoms);
+    }
+
+    private int PickUnusedSymptomIndex()
+    {
+        var used = new HashSet<int>(revealedSymptomIndices);
+        var unused = new List<int>();
+        for (int i = 0; i < virusFullSymptomList.Count; i++)
+        {
+            if (!used.Contains(i)) unused.Add(i);
+        }
+        if (unused.Count == 0) return -1;
+        return unused[Random.Range(0, unused.Count)];
+    }
+
+    private void RebuildVisibleSymptomsFromIndices()
+    {
+        currentVisibleSymptoms.Clear();
+        if (virusFullSymptomList == null) return;
+        foreach (var idx in revealedSymptomIndices)
+        {
+            if (idx >= 0 && idx < virusFullSymptomList.Count)
+                currentVisibleSymptoms.Add(virusFullSymptomList[idx]);
+        }
+    }
+
+    public IReadOnlyList<int> GetRevealedSymptomIndices() => revealedSymptomIndices;
 
     public void CurePlayerVirusAndBecomeImmune()
     {
@@ -152,6 +247,8 @@ public class NPCActor : MonoBehaviour
         infectedByPlayerVirus = false;
         immuneToCurrentPlayerVirus = true;
         currentVisibleSymptoms.Clear();
+        virusFullSymptomList.Clear();
+        revealedSymptomIndices.Clear();
         daysImmune = 1;
 
         if (isAlive)
@@ -162,6 +259,8 @@ public class NPCActor : MonoBehaviour
     {
         immuneToCurrentPlayerVirus = false;
     }
+
+    // ---------------- Normal disease symptoms ----------------
 
     private void BuildVisibleSymptomsForDayOne()
     {

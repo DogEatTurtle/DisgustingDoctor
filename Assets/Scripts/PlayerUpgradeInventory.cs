@@ -3,14 +3,24 @@ using UnityEngine;
 
 public class PlayerUpgradeInventory : MonoBehaviour
 {
-    [Header("Owned Upgrades")]
+    [Header("Owned Upgrades (Current)")]
     [SerializeField] private List<VirusUpgradeSO> ownedUpgrades = new();
 
+    [Header("Ever Owned Upgrades (Persistent)")]
+    [Tooltip("Tracks every upgrade the player has ever bought. Used by the external virus event to know which symptoms the player can recognize.")]
+    [SerializeField] private List<VirusUpgradeSO> everOwnedUpgrades = new();
+
     public IReadOnlyList<VirusUpgradeSO> OwnedUpgrades => ownedUpgrades;
+    public IReadOnlyList<VirusUpgradeSO> EverOwnedUpgrades => everOwnedUpgrades;
 
     public bool Contains(VirusUpgradeSO upgrade)
     {
         return upgrade != null && ownedUpgrades.Contains(upgrade);
+    }
+
+    public bool HasEverOwned(VirusUpgradeSO upgrade)
+    {
+        return upgrade != null && everOwnedUpgrades.Contains(upgrade);
     }
 
     public bool AddUpgrade(VirusUpgradeSO upgrade)
@@ -22,7 +32,11 @@ public class PlayerUpgradeInventory : MonoBehaviour
             return false;
         }
         ownedUpgrades.Add(upgrade);
-        Debug.Log($"[Inventory] Added {upgrade.shortName}. Total owned: {ownedUpgrades.Count}");
+
+        if (!everOwnedUpgrades.Contains(upgrade))
+            everOwnedUpgrades.Add(upgrade);
+
+        Debug.Log($"[Inventory] Added {upgrade.shortName}. Total owned: {ownedUpgrades.Count} | Ever owned: {everOwnedUpgrades.Count}");
         return true;
     }
 
@@ -43,6 +57,13 @@ public class PlayerUpgradeInventory : MonoBehaviour
         {
             if (up == null) continue;
             Debug.Log($"  - {up.shortName} (lethality +{up.lethalityPerDay:0.00}, dailyCap +{up.dailyInfectionsCap}, totalCap +{up.totalInfectionsCap})");
+        }
+
+        Debug.Log($"[Inventory] Ever owned: {everOwnedUpgrades.Count}");
+        foreach (var up in everOwnedUpgrades)
+        {
+            if (up == null) continue;
+            Debug.Log($"  - {up.shortName}");
         }
     }
 }

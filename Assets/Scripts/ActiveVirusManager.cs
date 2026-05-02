@@ -6,23 +6,29 @@ public class ActiveVirusManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private DailySystem dailySystem;
     [SerializeField] private DiseaseSO playerVirusDiseaseSO;
+    [SerializeField] private DiseaseSO externalVirusDiseaseSO;
 
     [Header("State")]
     [SerializeField] private ActiveVirus activeVirus;
 
     [Header("Propagation Weights")]
-    [Tooltip("Weight multiplier for NPCs sharing the profession of an infected NPC.")]
     [SerializeField] private float sameProfessionWeight = 2.0f;
-
-    [Tooltip("Weight multiplier applied to candidates based on their social trait's doctor visit chance multiplier (proxy for sociability). Higher = more social = more vulnerable.")]
     [SerializeField] private float sociabilityWeightFactor = 1.0f;
 
     public bool HasActiveVirus => activeVirus != null && activeVirus.IsActive;
     public ActiveVirus CurrentVirus => activeVirus;
+    public bool HasExternalVirusActive => HasActiveVirus && activeVirus.isExternal;
+    public bool HasPlayerVirusActive => HasActiveVirus && !activeVirus.isExternal;
 
     public bool IsPendingPatientZero(NPCActor npc)
     {
         return activeVirus != null && activeVirus.pendingPatientZero == npc && npc != null;
+    }
+
+    public IReadOnlyList<VirusUpgradeSO> GetExternalVirusUpgrades()
+    {
+        if (!HasExternalVirusActive) return null;
+        return activeVirus.sourceUpgrades;
     }
 
     public bool ReleaseVirus(VirusBlueprint blueprint, NPCActor patientZero)
@@ -48,13 +54,19 @@ public class ActiveVirusManager : MonoBehaviour
             return false;
         }
 
-        // Reset immunity for everyone (new virus = immunity wiped)
         if (dailySystem != null)
         {
             foreach (var npc in dailySystem.AllNPCs)
             {
                 if (npc != null) npc.ResetPlayerVirusImmunity();
             }
+        }
+
+        var sourceUpgrades = new List<VirusUpgradeSO>();
+        for (int i = 0; i < VirusBlueprint.SlotCount; i++)
+        {
+            if (blueprint.Slots[i] != null)
+                sourceUpgrades.Add(blueprint.Slots[i]);
         }
 
         activeVirus = new ActiveVirus
@@ -65,7 +77,9 @@ public class ActiveVirusManager : MonoBehaviour
             dailyInfectionsCap = blueprint.TotalDailyInfectionsCap,
             totalInfectionsBudget = blueprint.TotalInfectionsCap,
             totalInfectionsUsed = 0,
-            pendingPatientZero = patientZero
+            pendingPatientZero = patientZero,
+            isExternal = false,
+            sourceUpgrades = sourceUpgrades
         };
 
         Debug.Log(
@@ -79,13 +93,89 @@ public class ActiveVirusManager : MonoBehaviour
         return true;
     }
 
+    public bool ReleaseExternalVirus(List<VirusUpgradeSO> upgrades, NPCActor patientZero)
+    {
+        if (HasActiveVirus)
+        {
+            Debug.LogWarning("[Virus] Cannot release external: a virus is already active.");
+            return false;
+        }
+        if (upgrades == null || upgrades.Count != VirusBlueprint.SlotCount)
+        {
+            Debug.LogWarning("[Virus] Cannot release external: invalid upgrade list.");
+            return false;
+        }
+        if (patientZero == null || !patientZero.isAlive)
+        {
+            Debug.LogWarning("[Virus] Cannot release external: invalid patient zero.");
+            return false;
+        }
+        if (externalVirusDiseaseSO == null)
+        {
+            Debug.LogError("[Virus] No externalVirusDiseaseSO assigned in ActiveVirusManager.");
+            return false;
+        }
+
+        if (dailySystem != null)
+        {
+            foreach (var npc in dailySystem.AllNPCs)
+            {
+                if (npc != null) npc.ResetPlayerVirusImmunity();
+            }
+        }
+
+        float lethality = 0f;
+        int dailyCap = 0;
+        int totalCap = 0;
+        var combinedSymptoms = new List<string>();
+        foreach (var u in upgrades)
+        {
+            if (u == null) continue;
+            lethality += u.lethalityPerDay;
+            dailyCap += u.dailyInfectionsCap;
+            totalCap += u.totalInfectionsCap;
+            if (!string.IsNullOrWhiteSpace(u.llmSymptomSentence))
+                combinedSymptoms.Add(u.llmSymptomSentence);
+        }
+        lethality = Mathf.Clamp(lethality, 0f, 1f);
+        dailyCap = Mathf.Max(0, dailyCap);
+        totalCap = Mathf.Max(0, totalCap);
+
+        activeVirus = new ActiveVirus
+        {
+            virusDiseaseSO = externalVirusDiseaseSO,
+            combinedSymptoms = combinedSymptoms,
+            lethalityPerDay = lethality,
+            dailyInfectionsCap = dailyCap,
+            totalInfectionsBudget = totalCap,
+            totalInfectionsUsed = 0,
+            pendingPatientZero = null,
+            isExternal = true,
+            sourceUpgrades = new List<VirusUpgradeSO>(upgrades)
+        };
+
+        if (patientZero.isSick && !patientZero.infectedByPlayerVirus)
+        {
+            Debug.Log($"[ExternalVirus] {patientZero.npcName} was sick with {patientZero.currentDisease?.diseaseName}. External virus overrides it.");
+            patientZero.CureDisease();
+        }
+
+        InfectNPC(patientZero);
+
+        Debug.Log(
+            $"[ExternalVirus] Released! Patient zero: {patientZero.npcName} | " +
+            $"Lethality/day: {lethality:0.00} | Daily cap: {dailyCap} | Total budget: {totalCap} | " +
+            $"Symptoms: {string.Join(", ", upgrades.ConvertAll(u => u != null ? u.shortName : "null"))}"
+        );
+
+        return true;
+    }
+
     public void ProcessDailyVirusUpdate()
     {
         if (activeVirus == null) return;
 
         // 0. Manifest the virus on the pending patient zero, if any.
-        // This happens BEFORE lethality/propagation, so on the day of manifestation
-        // the patient zero is freshly infected and does not propagate yet.
         bool manifestedThisTurn = false;
         if (activeVirus.pendingPatientZero != null)
         {
@@ -94,7 +184,6 @@ public class ActiveVirusManager : MonoBehaviour
 
             if (pz != null && pz.isAlive)
             {
-                // Cure any prior disease silently (player virus takes over)
                 if (pz.isSick && !pz.infectedByPlayerVirus)
                 {
                     Debug.Log($"[Virus] {pz.npcName} was sick with {pz.currentDisease?.diseaseName}. Virus takes over.");
@@ -118,7 +207,7 @@ public class ActiveVirusManager : MonoBehaviour
             return;
         }
 
-        // 1. Roll lethality for each currently infected NPC
+        // 1. Roll lethality for each currently infected NPC and advance day
         var diedThisDay = new List<NPCActor>();
         var survivedAndCured = new List<NPCActor>();
         var freshlyManifestedThisTurn = new HashSet<NPCActor>();
@@ -126,8 +215,6 @@ public class ActiveVirusManager : MonoBehaviour
         {
             foreach (var infected in activeVirus.currentlyInfected)
             {
-                // The patient zero was just infected this turn (daysSick=1).
-                // Skip lethality and daysSick++ for them on this first turn.
                 if (infected != null && infected.daysSick == 1)
                     freshlyManifestedThisTurn.Add(infected);
             }
@@ -136,11 +223,8 @@ public class ActiveVirusManager : MonoBehaviour
         foreach (var npc in activeVirus.currentlyInfected)
         {
             if (npc == null || !npc.isAlive) continue;
-
-            // NPCs that just manifested this turn don't get lethality/daysSick++
             if (freshlyManifestedThisTurn.Contains(npc)) continue;
 
-            // Lethality roll first
             if (Random.value < activeVirus.lethalityPerDay)
             {
                 Debug.Log($"[Virus] {npc.npcName} died from the virus on day {npc.daysSick}.");
@@ -149,10 +233,11 @@ public class ActiveVirusManager : MonoBehaviour
                 continue;
             }
 
-            // Advance day
             npc.daysSick++;
 
-            // Spontaneous cure if survived 4 days
+            // After advancing the day, update which symptoms are revealed
+            npc.AdvanceVirusDay(activeVirus.isExternal);
+
             if (npc.daysSick > 4)
             {
                 Debug.Log($"[Virus] {npc.npcName} survived the virus and is now immune.");
@@ -165,7 +250,6 @@ public class ActiveVirusManager : MonoBehaviour
         foreach (var npc in survivedAndCured) activeVirus.UnregisterInfection(npc);
 
         // 2. Propagate to new candidates — but NOT on the manifestation turn.
-        // The patient zero gets one full day of incubation before infecting others.
         if (!manifestedThisTurn)
             PropagateToNewVictims();
 
@@ -185,12 +269,9 @@ public class ActiveVirusManager : MonoBehaviour
         if (activeVirus.currentlyInfected.Count == 0) return;
         if (dailySystem == null) return;
 
-
-        // Build candidate list: alive, not infected by virus, not immune to virus, not currently sick with virus
         var candidates = new List<NPCActor>();
         var weights = new List<float>();
 
-        // Collect professions of currently infected for proximity bonus
         var infectedProfessions = new HashSet<ProfessionSO>();
         foreach (var infected in activeVirus.currentlyInfected)
         {
@@ -208,11 +289,9 @@ public class ActiveVirusManager : MonoBehaviour
 
             float weight = 1f;
 
-            // Same profession as someone already infected
             if (npc.profession != null && infectedProfessions.Contains(npc.profession))
                 weight *= sameProfessionWeight;
 
-            // Sociability proxy: use the NPC's doctor visit multipliers as a stand-in for being social
             float socialMult = 1f;
             if (npc.socialTrait != null) socialMult *= npc.socialTrait.doctorVisitChanceMultiplier;
             if (npc.skillTrait != null) socialMult *= npc.skillTrait.doctorVisitChanceMultiplier;
@@ -243,10 +322,89 @@ public class ActiveVirusManager : MonoBehaviour
         if (npc == null || !npc.isAlive) return;
         if (activeVirus == null) return;
 
-        npc.CatchPlayerVirus(activeVirus.virusDiseaseSO, activeVirus.combinedSymptoms);
+        // Pick the initial 2 revealed symptom indices for this NPC.
+        // For the external virus, the second NPC infected is forced to have a
+        // different set than the first, to encourage the player to talk to
+        // multiple patients to discover all symptoms.
+        var initialIndices = PickInitialRevealedIndices(npc);
+
+        npc.CatchPlayerVirus(activeVirus.virusDiseaseSO, activeVirus.combinedSymptoms, initialIndices);
         activeVirus.RegisterInfection(npc);
 
-        Debug.Log($"[Virus] Infected {npc.npcName}. Total used: {activeVirus.totalInfectionsUsed}/{activeVirus.totalInfectionsBudget}");
+        Debug.Log(
+            $"[Virus] Infected {npc.npcName} with revealed indices [{string.Join(",", initialIndices)}]. " +
+            $"Total used: {activeVirus.totalInfectionsUsed}/{activeVirus.totalInfectionsBudget}"
+        );
+    }
+
+    private List<int> PickInitialRevealedIndices(NPCActor npc)
+    {
+        int totalSymptoms = activeVirus.combinedSymptoms != null ? activeVirus.combinedSymptoms.Count : 0;
+        int count = Mathf.Min(2, totalSymptoms);
+
+        var indices = new List<int>();
+        if (totalSymptoms == 0) return indices;
+
+        // For the external virus, if this is the second infected NPC,
+        // force a different combination than the first.
+        bool isExternal = activeVirus.isExternal;
+        bool isSecondInfected = isExternal && activeVirus.currentlyInfected.Count == 1;
+
+        if (isSecondInfected)
+        {
+            var firstInfected = activeVirus.currentlyInfected[0];
+            var firstIndices = firstInfected != null
+                ? new HashSet<int>(firstInfected.GetRevealedSymptomIndices())
+                : new HashSet<int>();
+
+            // Try to pick a pair that differs from the first set.
+            // Strategy: prefer 2 indices that are NOT in firstIndices.
+            var preferred = new List<int>();
+            var fallback = new List<int>();
+            for (int i = 0; i < totalSymptoms; i++)
+            {
+                if (firstIndices.Contains(i)) fallback.Add(i);
+                else preferred.Add(i);
+            }
+
+            // Pick from preferred first, then fallback
+            var combined = new List<int>(preferred);
+            combined.AddRange(fallback);
+
+            // Shuffle within preferred and fallback to keep some randomness
+            ShuffleInPlace(preferred);
+            ShuffleInPlace(fallback);
+            combined = new List<int>(preferred);
+            combined.AddRange(fallback);
+
+            // Take 2 — guaranteed different from first set if there are >= 2 unused indices
+            for (int i = 0; i < count && i < combined.Count; i++)
+                indices.Add(combined[i]);
+
+            // Sanity: if by chance we picked the exact same set (rare with small symptom pools),
+            // try to swap one. But with totalSymptoms == 4 and first having 2, there are exactly
+            // 2 indices in `preferred`, so this branch always picks them: guaranteed difference.
+        }
+        else
+        {
+            // Random pick
+            var pool = new List<int>();
+            for (int i = 0; i < totalSymptoms; i++) pool.Add(i);
+            ShuffleInPlace(pool);
+            for (int i = 0; i < count && i < pool.Count; i++)
+                indices.Add(pool[i]);
+        }
+
+        return indices;
+    }
+
+    private void ShuffleInPlace(List<int> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int j = Random.Range(i, list.Count);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
     }
 
     private int WeightedSample(List<float> weights)
@@ -277,5 +435,23 @@ public class ActiveVirusManager : MonoBehaviour
             Debug.Log("[Virus] The virus has gone extinct (last infected was cured by the player).");
             activeVirus = null;
         }
+    }
+
+    public List<NPCActor> CureAllExternalVirusInfected()
+    {
+        var cured = new List<NPCActor>();
+        if (!HasExternalVirusActive) return cured;
+
+        foreach (var npc in activeVirus.currentlyInfected.ToArray())
+        {
+            if (npc == null) continue;
+            npc.CurePlayerVirusAndBecomeImmune();
+            cured.Add(npc);
+        }
+        activeVirus.currentlyInfected.Clear();
+
+        Debug.Log($"[ExternalVirus] Cure successful. {cured.Count} NPCs cured. Virus extinct.");
+        activeVirus = null;
+        return cured;
     }
 }

@@ -13,6 +13,7 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private MoneyManager moneyManager;
     [SerializeField] private ActiveVirusManager activeVirusManager;
     [SerializeField] private DiagnosisCounter diagnosisCounter;
+    [SerializeField] private VirusLabUI virusLabUI;
 
     [Header("Gameplay UI")]
     [SerializeField] private GameObject notebookPanel;
@@ -22,13 +23,8 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private DiseaseButtonSelectionUI selectionUI;
 
     [Header("Economy")]
-    [Tooltip("Base reward for any correct diagnosis (normal disease or player virus).")]
     [SerializeField] private int rewardOnCorrectDiagnosis = 20;
-
-    [Tooltip("Extra fixed reward when curing the player's virus (on top of base + lethality).")]
     [SerializeField] private int playerVirusBonus = 30;
-
-    [Tooltip("Multiplier applied to the virus's lethalityPerDay to compute the lethality bonus per cure.")]
     [SerializeField] private float lethalityRewardMultiplier = 400f;
 
     [Header("Trust")]
@@ -138,7 +134,8 @@ public class DiagnosisUI : MonoBehaviour
         }
 
         bool correct = selectedDisease == patient.currentDisease;
-        bool wasPlayerVirus = patient.infectedByPlayerVirus;
+        bool wasPlayerVirus = patient.infectedByPlayerVirus && !IsExternalVirus(patient);
+        bool wasExternalVirus = patient.infectedByPlayerVirus && IsExternalVirus(patient);
         DiseaseSO diagnosedDisease = patient.currentDisease;
 
         if (patient.patientRecord != null)
@@ -155,27 +152,38 @@ public class DiagnosisUI : MonoBehaviour
         {
             patient.AdjustTrust(trustGainOnCorrect);
 
-            int totalReward = ComputeReward(wasPlayerVirus);
+            int totalReward = ComputeReward(wasPlayerVirus, wasExternalVirus);
 
             if (moneyManager != null)
                 moneyManager.AddMoney(totalReward);
 
-            // Register correct diagnosis for rare upgrade unlocks (skips player virus / unknown virus)
+            // Register correct diagnosis for rare upgrade unlocks
+            // (skips player virus / external virus because they're in the excluded list)
             if (diagnosisCounter != null && diagnosedDisease != null)
                 diagnosisCounter.RegisterCorrectDiagnosis(diagnosedDisease);
 
-            if (wasPlayerVirus)
+            if (wasExternalVirus)
+            {
+                // External virus diagnosis: trust + money, but patient stays infected.
+                // Only the lab cure heals the external virus.
+                if (virusLabUI != null)
+                    virusLabUI.NotifyUnknownVirusDiagnosed();
+
+                SetFeedback($"Correct: Unknown Virus identified. +{totalReward} coins. Cure must be made in the lab.");
+            }
+            else if (wasPlayerVirus)
             {
                 patient.CurePlayerVirusAndBecomeImmune();
                 if (activeVirusManager != null)
                     activeVirusManager.NotifyPlayerCuredInfectedNPC(patient);
+
+                SetFeedback($"Correct. +{totalReward} coins. Trust increased to {patient.trustInDoctor:0.00}");
             }
             else
             {
                 patient.CureDisease();
+                SetFeedback($"Correct. +{totalReward} coins. Trust increased to {patient.trustInDoctor:0.00}");
             }
-
-            SetFeedback($"Correct. +{totalReward} coins. Trust increased to {patient.trustInDoctor:0.00}");
         }
         else
         {
@@ -204,10 +212,26 @@ public class DiagnosisUI : MonoBehaviour
         consultationManager.EndConsultation();
     }
 
-    private int ComputeReward(bool wasPlayerVirus)
+    private bool IsExternalVirus(NPCActor patient)
+    {
+        if (activeVirusManager == null) return false;
+        if (!activeVirusManager.HasExternalVirusActive) return false;
+        if (patient == null || !patient.infectedByPlayerVirus) return false;
+
+        // The patient is infected by a virus tracked in ActiveVirusManager.
+        // If the active virus is external, this patient is infected by it.
+        return true;
+    }
+
+    private int ComputeReward(bool wasPlayerVirus, bool wasExternalVirus)
     {
         int reward = rewardOnCorrectDiagnosis;
 
+        // External virus: only base reward (20 coins). The big reward comes from the cure.
+        if (wasExternalVirus)
+            return reward;
+
+        // Player virus: base + bonus + lethality multiplier
         if (wasPlayerVirus && activeVirusManager != null && activeVirusManager.HasActiveVirus)
         {
             int lethalityBonus = Mathf.RoundToInt(activeVirusManager.CurrentVirus.lethalityPerDay * lethalityRewardMultiplier);

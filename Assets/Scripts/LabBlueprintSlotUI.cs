@@ -16,9 +16,13 @@ public class LabBlueprintSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     [Header("Remove Button (shown on hover when filled)")]
     [SerializeField] private Button removeButton;
 
+    [Header("Correct Mark (shown after a successful cure attempt)")]
+    [SerializeField] private GameObject correctMark;
+
     private VirusLabUI labUI;
     private int slotIndex;
     private bool isFilled;
+    private bool isMarkedCorrect;
 
     public void Setup(int index, VirusLabUI ui)
     {
@@ -31,6 +35,9 @@ public class LabBlueprintSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
             removeButton.onClick.AddListener(OnRemoveClicked);
             removeButton.gameObject.SetActive(false);
         }
+
+        if (correctMark != null)
+            correctMark.SetActive(false);
     }
 
     public void SetFilled(VirusUpgradeSO upgrade)
@@ -46,7 +53,6 @@ public class LabBlueprintSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
         if (statsText != null)
             statsText.text = BuildFullStats(upgrade);
 
-        // o botão só aparece em hover; por defeito fica escondido
         if (removeButton != null)
             removeButton.gameObject.SetActive(false);
     }
@@ -54,17 +60,35 @@ public class LabBlueprintSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     public void SetEmpty()
     {
         isFilled = false;
+        isMarkedCorrect = false;
 
         if (filledContent != null) filledContent.SetActive(false);
         if (emptyContent != null) emptyContent.SetActive(true);
 
         if (removeButton != null)
             removeButton.gameObject.SetActive(false);
+
+        if (correctMark != null)
+            correctMark.SetActive(false);
+    }
+
+    public void SetCorrectMark(bool correct)
+    {
+        isMarkedCorrect = correct;
+        if (correctMark != null)
+            correctMark.SetActive(correct);
+    }
+
+    public void ClearCorrectMark()
+    {
+        isMarkedCorrect = false;
+        if (correctMark != null)
+            correctMark.SetActive(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (isFilled && removeButton != null)
+        if (isFilled && !isMarkedCorrect && removeButton != null)
             removeButton.gameObject.SetActive(true);
     }
 

@@ -15,6 +15,7 @@ public class BlackMarketShopManager : MonoBehaviour
     [SerializeField] private List<VirusUpgradeSO> todaysOffers = new();
 
     public IReadOnlyList<VirusUpgradeSO> TodaysOffers => todaysOffers;
+    public IReadOnlyList<VirusUpgradeSO> AllUpgrades => allUpgrades;
 
     public void RefreshDailyOffers()
     {

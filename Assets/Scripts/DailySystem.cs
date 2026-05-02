@@ -5,6 +5,8 @@ public class DailySystem : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private ActiveVirusManager activeVirusManager;
+    [SerializeField] private ExternalVirusEvent externalVirusEvent;
+    [SerializeField] private VirusLabUI virusLabUI;
     [SerializeField] private BlackMarketShopManager blackMarketShop;
 
     [Header("NPCs")]
@@ -18,8 +20,12 @@ public class DailySystem : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float baseClinicVisitChance = 0.4f;
     [SerializeField, Range(0f, 1f)] private float deathChanceAfterThreeDays = 0.10f;
 
-    [Header("Clinic")]
+    [Header("Clinic Caps")]
+    [Tooltip("Maximum total patients in the clinic per day (chair limit).")]
     [SerializeField, Min(1)] private int maxPatientsPerDay = 5;
+
+    [Tooltip("Maximum patients with normal diseases per day. Virus-infected patients can fill the remaining slots up to maxPatientsPerDay.")]
+    [SerializeField, Min(0)] private int maxNormalPatientsPerDay = 3;
 
     [Header("Today's Patients (Read Only)")]
     [SerializeField] private List<NPCActor> todaysPatients = new();
@@ -36,11 +42,19 @@ public class DailySystem : MonoBehaviour
 
         todaysPatients.Clear();
 
-        // 0) Processar o vírus do jogador primeiro (letalidade diária, propagação, extinção)
+        // Reset cure cooldown and external virus discovery flag for the new day
+        if (virusLabUI != null)
+            virusLabUI.OnNewDay();
+
+        // 0a) Process the active virus (lethality, propagation, extinction)
         if (activeVirusManager != null)
             activeVirusManager.ProcessDailyVirusUpdate();
 
-        // 1) Quem já estava doente avança um dia (exceto infectados pelo vírus, já tratados acima)
+        // 0b) Maybe trigger an external virus event (only if no virus is active)
+        if (externalVirusEvent != null)
+            externalVirusEvent.TickAndMaybeTrigger();
+
+        // 1) NPCs already sick advance one day (excluding virus-infected, handled above)
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -49,8 +63,7 @@ public class DailySystem : MonoBehaviour
                 npc.AdvanceDayWithDisease();
         }
 
-        // 2) Quem ultrapassou o 3.º dia rola morte / cura espontânea (apenas doenças normais).
-        // O pendingPatientZero do vírus está protegido durante o dia da transição.
+        // 2) Death/spontaneous cure roll for normal diseases (after day 3).
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -71,7 +84,7 @@ public class DailySystem : MonoBehaviour
             }
         }
 
-        // 3) Decrementar imunidade dos vivos
+        // 3) Decrement immunity for the living
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -79,7 +92,7 @@ public class DailySystem : MonoBehaviour
                 npc.daysImmune--;
         }
 
-        // 4) Atribuir doenças novas a quem está saudável, fora de cooldown e não infectado pelo vírus
+        // 4) Assign new diseases to healthy, non-immune, non-infected NPCs
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -98,64 +111,96 @@ public class DailySystem : MonoBehaviour
             }
         }
 
-        // 5) Limpar flags do consultório dos vivos
+        // 5) Clear clinic flags for the living
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
             npc.willVisitClinic = false;
         }
 
-        // Refresh black market offers for the new day (sempre, independentemente de haver pacientes)
+        // Refresh black market offers
         if (blackMarketShop != null)
             blackMarketShop.RefreshDailyOffers();
 
-        // 6) Recolher NPCs vivos e doentes (inclui infectados pelo vírus)
-        List<NPCActor> sickNPCs = new();
+        // 6) Collect alive sick NPCs into two pools: normal and virus
+        List<NPCActor> sickNormal = new();
+        List<NPCActor> sickVirus = new();
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
-            if (npc.isSick) sickNPCs.Add(npc);
+            if (!npc.isSick) continue;
+
+            if (npc.infectedByPlayerVirus)
+                sickVirus.Add(npc);
+            else
+                sickNormal.Add(npc);
         }
 
-        if (sickNPCs.Count == 0)
+        if (sickNormal.Count == 0 && sickVirus.Count == 0)
         {
             Debug.Log("Nenhum NPC vivo está doente. Consultório vazio.");
             LogDailyStatus();
             return;
         }
 
-        // 7) Quem dos doentes quer ir ao médico
-        List<NPCActor> willingSickNPCs = new();
-        foreach (var npc in sickNPCs)
+        // 7) Roll which sick NPCs want to visit the clinic (each pool independently)
+        List<NPCActor> willingNormal = new();
+        foreach (var npc in sickNormal)
         {
-            float finalVisitChance = GetFinalClinicVisitChance(npc);
-            if (Random.value < finalVisitChance)
-                willingSickNPCs.Add(npc);
+            float chance = GetFinalClinicVisitChance(npc);
+            if (Random.value < chance)
+                willingNormal.Add(npc);
         }
 
-        if (willingSickNPCs.Count == 0)
+        List<NPCActor> willingVirus = new();
+        foreach (var npc in sickVirus)
+        {
+            float chance = GetFinalClinicVisitChance(npc);
+            if (Random.value < chance)
+                willingVirus.Add(npc);
+        }
+
+        if (willingNormal.Count == 0 && willingVirus.Count == 0)
         {
             Debug.Log("Há NPCs doentes, mas nenhum quis ir ao consultório hoje.");
             LogDailyStatus();
             return;
         }
 
-        // 8) Máximo de maxPatientsPerDay pacientes por dia
-        int targetCount = Mathf.Clamp(willingSickNPCs.Count, 1, maxPatientsPerDay);
+        // 8) Apply caps
+        // Normal patients: capped at maxNormalPatientsPerDay
+        // Virus patients: can fill the remaining slots up to maxPatientsPerDay
+        ShuffleInPlace(willingNormal);
+        ShuffleInPlace(willingVirus);
 
-        for (int i = 0; i < willingSickNPCs.Count; i++)
+        int normalsToTake = Mathf.Min(willingNormal.Count, maxNormalPatientsPerDay);
+        int remainingSlots = Mathf.Max(0, maxPatientsPerDay - normalsToTake);
+        int virusToTake = Mathf.Min(willingVirus.Count, remainingSlots);
+
+        for (int i = 0; i < normalsToTake; i++)
         {
-            int randIndex = Random.Range(i, willingSickNPCs.Count);
-            (willingSickNPCs[i], willingSickNPCs[randIndex]) = (willingSickNPCs[randIndex], willingSickNPCs[i]);
+            willingNormal[i].willVisitClinic = true;
+            todaysPatients.Add(willingNormal[i]);
         }
 
-        for (int i = 0; i < targetCount && i < willingSickNPCs.Count; i++)
+        for (int i = 0; i < virusToTake; i++)
         {
-            willingSickNPCs[i].willVisitClinic = true;
-            todaysPatients.Add(willingSickNPCs[i]);
+            willingVirus[i].willVisitClinic = true;
+            todaysPatients.Add(willingVirus[i]);
         }
+
+        Debug.Log($"[Clinic] Selected {normalsToTake} normal + {virusToTake} virus patients (cap: {maxNormalPatientsPerDay} normal / {maxPatientsPerDay} total).");
 
         LogDailyStatus();
+    }
+
+    private void ShuffleInPlace(List<NPCActor> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int randIndex = Random.Range(i, list.Count);
+            (list[i], list[randIndex]) = (list[randIndex], list[i]);
+        }
     }
 
     private float GetSicknessTraitModifier(NPCActor npc)

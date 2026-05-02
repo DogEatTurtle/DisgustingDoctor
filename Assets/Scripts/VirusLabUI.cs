@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class VirusLabUI : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private VirusLabManager labManager;
     [SerializeField] private PlayerUpgradeInventory inventory;
+    [SerializeField] private ActiveVirusManager activeVirusManager;
+    [SerializeField] private ExternalVirusEvent externalVirusEvent;
+    [SerializeField] private MoneyManager moneyManager;
     [SerializeField] private FPSController fpsController;
     [SerializeField] private LookInteractor lookInteractor;
 
@@ -24,22 +28,32 @@ public class VirusLabUI : MonoBehaviour
     [SerializeField] private TMP_Text totalsText;
     [SerializeField] private TMP_Text statusText;
 
+    [Header("Cure Button (shown only when external virus is active and discovered)")]
+    [SerializeField] private GameObject tryCureButton;
+    [SerializeField] private TMP_Text cureButtonLabelText;
+
     [Header("Feedback")]
     [SerializeField] private TMP_Text feedbackText;
 
     private bool isOpen;
+    private bool externalVirusDiscovered; // true after at least one correct Unknown Virus diagnosis
+    private bool cureAttemptUsedToday;
+
+    public bool ExternalVirusDiscovered => externalVirusDiscovered;
 
     private void Start()
     {
         if (labPanel != null)
             labPanel.SetActive(false);
 
-        // configurar os slots com o seu índice
         for (int i = 0; i < blueprintSlots.Count; i++)
         {
             if (blueprintSlots[i] != null)
                 blueprintSlots[i].Setup(i, this);
         }
+
+        if (tryCureButton != null)
+            tryCureButton.SetActive(false);
     }
 
     private void Update()
@@ -85,13 +99,29 @@ public class VirusLabUI : MonoBehaviour
         Cursor.visible = false;
     }
 
+    // Called by DiagnosisUI when player correctly diagnoses Unknown Virus
+    public void NotifyUnknownVirusDiagnosed()
+    {
+        externalVirusDiscovered = true;
+        Debug.Log("[Lab] External virus discovered. 'Try cure' button will be available in the lab.");
+    }
+
+    // Called by DailySystem.ProcessNewDay
+    public void OnNewDay()
+    {
+        cureAttemptUsedToday = false;
+
+        // Reset discovery flag when there's no external virus active anymore
+        if (activeVirusManager == null || !activeVirusManager.HasExternalVirusActive)
+            externalVirusDiscovered = false;
+    }
+
     // ---------------- Event handlers chamados pelos filhos ----------------
 
     public void OnInventoryEntryClicked(VirusUpgradeSO upgrade)
     {
         if (labManager == null || upgrade == null) return;
 
-        // encontrar o primeiro slot vazio
         var blueprint = labManager.CurrentBlueprint;
         int firstEmpty = -1;
         for (int i = 0; i < VirusBlueprint.SlotCount; i++)
@@ -112,6 +142,8 @@ public class VirusLabUI : MonoBehaviour
         bool placed = labManager.TryPutUpgradeInSlot(firstEmpty, upgrade);
         if (placed)
         {
+            // Adding a new symptom invalidates the previous correctness state
+            ClearCorrectMarks();
             SetFeedback($"Added {upgrade.shortName} to slot {firstEmpty + 1}.");
             RefreshAll();
         }
@@ -130,17 +162,86 @@ public class VirusLabUI : MonoBehaviour
         if (blueprint.Slots[slotIndex] == null) return;
 
         labManager.RemoveFromSlot(slotIndex);
+        ClearCorrectMarks();
         SetFeedback($"Removed upgrade from slot {slotIndex + 1}.");
         RefreshAll();
     }
 
-    // Ligado ao botão "Clear" no Inspector
     public void OnClearBlueprintClicked()
     {
         if (labManager == null) return;
         labManager.ClearBlueprint();
+        ClearCorrectMarks();
         SetFeedback("Blueprint cleared.");
         RefreshAll();
+    }
+
+    // Called by the "Try cure" button
+    public void OnTryCureClicked()
+    {
+        if (labManager == null || activeVirusManager == null) return;
+
+        if (!activeVirusManager.HasExternalVirusActive)
+        {
+            SetFeedback("No external virus active.");
+            return;
+        }
+
+        if (cureAttemptUsedToday)
+        {
+            SetFeedback("You already attempted a cure today. Try again tomorrow.");
+            return;
+        }
+
+        if (!labManager.CurrentBlueprint.IsComplete)
+        {
+            SetFeedback("Fill all 4 slots before attempting a cure.");
+            return;
+        }
+
+        var result = labManager.TryCure();
+        cureAttemptUsedToday = true;
+
+        // Mark correct slots visually
+        for (int i = 0; i < blueprintSlots.Count; i++)
+        {
+            if (blueprintSlots[i] == null) continue;
+            bool isCorrect = result.correctSlotIndices.Contains(i);
+            blueprintSlots[i].SetCorrectMark(isCorrect);
+        }
+
+        if (result.isPerfect)
+        {
+            int reward = externalVirusEvent != null ? externalVirusEvent.CureCompletionReward : 0;
+
+            // Cure all infected NPCs and end the virus
+            var cured = activeVirusManager.CureAllExternalVirusInfected();
+
+            // Consume the remaining (correct) blueprint upgrades
+            labManager.ConsumeCureBlueprint();
+
+            if (moneyManager != null && reward > 0)
+                moneyManager.AddMoney(reward);
+
+            externalVirusDiscovered = false;
+
+            SetFeedback($"Cure successful! {cured.Count} NPCs healed. +{reward} coins.");
+            Debug.Log($"[Lab] Perfect cure! {cured.Count} cured. Reward: {reward} coins.");
+        }
+        else
+        {
+            SetFeedback($"Partial match: {result.correctCount}/{result.totalSlots} correct. Wrong symptoms lost.");
+        }
+
+        RefreshAll();
+    }
+
+    private void ClearCorrectMarks()
+    {
+        foreach (var slot in blueprintSlots)
+        {
+            if (slot != null) slot.ClearCorrectMark();
+        }
     }
 
     // ---------------- Refresh ----------------
@@ -150,6 +251,7 @@ public class VirusLabUI : MonoBehaviour
         RefreshInventoryList();
         RefreshSlots();
         RefreshTotals();
+        RefreshCureButton();
     }
 
     private void RefreshInventoryList()
@@ -157,13 +259,11 @@ public class VirusLabUI : MonoBehaviour
         if (inventoryListContainer == null || inventoryEntryPrefab == null || inventory == null)
             return;
 
-        // limpar lista actual
         foreach (Transform child in inventoryListContainer)
             Destroy(child.gameObject);
 
         var blueprint = labManager.CurrentBlueprint;
 
-        // só mostrar os upgrades que o jogador tem E que não estão já na blueprint
         foreach (var upgrade in inventory.OwnedUpgrades)
         {
             if (upgrade == null) continue;
@@ -212,6 +312,25 @@ public class VirusLabUI : MonoBehaviour
             statusText.text = blueprint.IsComplete
                 ? $"Virus status: {filled}/{VirusBlueprint.SlotCount} complete"
                 : $"Virus status: {filled}/{VirusBlueprint.SlotCount}";
+        }
+    }
+
+    private void RefreshCureButton()
+    {
+        if (tryCureButton == null) return;
+
+        bool shouldShow =
+            activeVirusManager != null &&
+            activeVirusManager.HasExternalVirusActive &&
+            externalVirusDiscovered;
+
+        tryCureButton.SetActive(shouldShow);
+
+        if (shouldShow && cureButtonLabelText != null)
+        {
+            cureButtonLabelText.text = cureAttemptUsedToday
+                ? "Try cure (used today)"
+                : "Try cure";
         }
     }
 
