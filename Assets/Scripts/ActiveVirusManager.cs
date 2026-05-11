@@ -7,6 +7,8 @@ public class ActiveVirusManager : MonoBehaviour
     [SerializeField] private DailySystem dailySystem;
     [SerializeField] private DiseaseSO playerVirusDiseaseSO;
     [SerializeField] private DiseaseSO externalVirusDiseaseSO;
+    [SerializeField] private GameStats gameStats;
+    [SerializeField] private EventFeedbackUI eventFeedbackUI;
 
     [Header("State")]
     [SerializeField] private ActiveVirus activeVirus;
@@ -63,10 +65,14 @@ public class ActiveVirusManager : MonoBehaviour
         }
 
         var sourceUpgrades = new List<VirusUpgradeSO>();
+        var symptomNames = new List<string>();
         for (int i = 0; i < VirusBlueprint.SlotCount; i++)
         {
             if (blueprint.Slots[i] != null)
+            {
                 sourceUpgrades.Add(blueprint.Slots[i]);
+                symptomNames.Add(blueprint.Slots[i].shortName);
+            }
         }
 
         activeVirus = new ActiveVirus
@@ -89,6 +95,17 @@ public class ActiveVirusManager : MonoBehaviour
             $"Total budget: {activeVirus.totalInfectionsBudget} | " +
             $"Will manifest on the next day."
         );
+
+        if (gameStats != null)
+        {
+            gameStats.RecordPlayerVirusReleased(
+                patientZero.npcName,
+                activeVirus.lethalityPerDay,
+                activeVirus.dailyInfectionsCap,
+                activeVirus.totalInfectionsBudget,
+                symptomNames
+            );
+        }
 
         return true;
     }
@@ -128,6 +145,7 @@ public class ActiveVirusManager : MonoBehaviour
         int dailyCap = 0;
         int totalCap = 0;
         var combinedSymptoms = new List<string>();
+        var symptomNames = new List<string>();
         foreach (var u in upgrades)
         {
             if (u == null) continue;
@@ -136,6 +154,7 @@ public class ActiveVirusManager : MonoBehaviour
             totalCap += u.totalInfectionsCap;
             if (!string.IsNullOrWhiteSpace(u.llmSymptomSentence))
                 combinedSymptoms.Add(u.llmSymptomSentence);
+            symptomNames.Add(u.shortName);
         }
         lethality = Mathf.Clamp(lethality, 0f, 1f);
         dailyCap = Mathf.Max(0, dailyCap);
@@ -165,8 +184,11 @@ public class ActiveVirusManager : MonoBehaviour
         Debug.Log(
             $"[ExternalVirus] Released! Patient zero: {patientZero.npcName} | " +
             $"Lethality/day: {lethality:0.00} | Daily cap: {dailyCap} | Total budget: {totalCap} | " +
-            $"Symptoms: {string.Join(", ", upgrades.ConvertAll(u => u != null ? u.shortName : "null"))}"
+            $"Symptoms: {string.Join(", ", symptomNames)}"
         );
+
+        if (gameStats != null)
+            gameStats.RecordExternalVirusReleased(patientZero.npcName, lethality, dailyCap, totalCap, symptomNames);
 
         return true;
     }
@@ -175,7 +197,6 @@ public class ActiveVirusManager : MonoBehaviour
     {
         if (activeVirus == null) return;
 
-        // 0. Manifest the virus on the pending patient zero, if any.
         bool manifestedThisTurn = false;
         if (activeVirus.pendingPatientZero != null)
         {
@@ -202,12 +223,14 @@ public class ActiveVirusManager : MonoBehaviour
 
         if (!HasActiveVirus)
         {
+            bool wasExternal = activeVirus != null && activeVirus.isExternal;
             Debug.Log("[Virus] The virus has gone extinct (no infected NPCs after manifestation).");
+            if (gameStats != null) gameStats.RecordVirusExtinct(wasExternal);
+            ShowExtinctFeedback(wasExternal);
             activeVirus = null;
             return;
         }
 
-        // 1. Roll lethality for each currently infected NPC and advance day
         var diedThisDay = new List<NPCActor>();
         var survivedAndCured = new List<NPCActor>();
         var freshlyManifestedThisTurn = new HashSet<NPCActor>();
@@ -220,6 +243,8 @@ public class ActiveVirusManager : MonoBehaviour
             }
         }
 
+        bool isExternalNow = activeVirus.isExternal;
+
         foreach (var npc in activeVirus.currentlyInfected)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -230,12 +255,17 @@ public class ActiveVirusManager : MonoBehaviour
                 Debug.Log($"[Virus] {npc.npcName} died from the virus on day {npc.daysSick}.");
                 npc.Die();
                 diedThisDay.Add(npc);
+
+                if (gameStats != null)
+                {
+                    string cause = isExternalNow ? "ExternalVirus" : "PlayerVirus";
+                    int aliveAfter = CountAliveSafe();
+                    gameStats.RecordDeath(npc.npcName, cause, aliveAfter);
+                }
                 continue;
             }
 
             npc.daysSick++;
-
-            // After advancing the day, update which symptoms are revealed
             npc.AdvanceVirusDay(activeVirus.isExternal);
 
             if (npc.daysSick > 4)
@@ -249,16 +279,34 @@ public class ActiveVirusManager : MonoBehaviour
         foreach (var npc in diedThisDay) activeVirus.UnregisterInfection(npc);
         foreach (var npc in survivedAndCured) activeVirus.UnregisterInfection(npc);
 
-        // 2. Propagate to new candidates — but NOT on the manifestation turn.
         if (!manifestedThisTurn)
             PropagateToNewVictims();
 
-        // 3. Check extinction
         if (!HasActiveVirus)
         {
             Debug.Log("[Virus] The virus has gone extinct (no more infected NPCs).");
+            if (gameStats != null) gameStats.RecordVirusExtinct(isExternalNow);
+            ShowExtinctFeedback(isExternalNow);
             activeVirus = null;
         }
+    }
+
+    // Helper for feedback when a virus goes extinct (not by player cure)
+    private void ShowExtinctFeedback(bool wasExternal)
+    {
+        if (eventFeedbackUI == null) return;
+        eventFeedbackUI.Show(wasExternal
+            ? EventFeedbackUI.FeedbackType.ExternalVirusExtinctNaturally
+            : EventFeedbackUI.FeedbackType.PlayerVirusExtinct);
+    }
+
+    private int CountAliveSafe()
+    {
+        if (dailySystem == null) return 0;
+        int alive = 0;
+        foreach (var npc in dailySystem.AllNPCs)
+            if (npc != null && npc.isAlive) alive++;
+        return alive;
     }
 
     private void PropagateToNewVictims()
@@ -322,10 +370,6 @@ public class ActiveVirusManager : MonoBehaviour
         if (npc == null || !npc.isAlive) return;
         if (activeVirus == null) return;
 
-        // Pick the initial 2 revealed symptom indices for this NPC.
-        // For the external virus, the second NPC infected is forced to have a
-        // different set than the first, to encourage the player to talk to
-        // multiple patients to discover all symptoms.
         var initialIndices = PickInitialRevealedIndices(npc);
 
         npc.CatchPlayerVirus(activeVirus.virusDiseaseSO, activeVirus.combinedSymptoms, initialIndices);
@@ -335,6 +379,9 @@ public class ActiveVirusManager : MonoBehaviour
             $"[Virus] Infected {npc.npcName} with revealed indices [{string.Join(",", initialIndices)}]. " +
             $"Total used: {activeVirus.totalInfectionsUsed}/{activeVirus.totalInfectionsBudget}"
         );
+
+        if (gameStats != null && !activeVirus.isExternal)
+            gameStats.RecordPlayerVirusInfection(npc.npcName);
     }
 
     private List<int> PickInitialRevealedIndices(NPCActor npc)
@@ -345,8 +392,6 @@ public class ActiveVirusManager : MonoBehaviour
         var indices = new List<int>();
         if (totalSymptoms == 0) return indices;
 
-        // For the external virus, if this is the second infected NPC,
-        // force a different combination than the first.
         bool isExternal = activeVirus.isExternal;
         bool isSecondInfected = isExternal && activeVirus.currentlyInfected.Count == 1;
 
@@ -357,8 +402,6 @@ public class ActiveVirusManager : MonoBehaviour
                 ? new HashSet<int>(firstInfected.GetRevealedSymptomIndices())
                 : new HashSet<int>();
 
-            // Try to pick a pair that differs from the first set.
-            // Strategy: prefer 2 indices that are NOT in firstIndices.
             var preferred = new List<int>();
             var fallback = new List<int>();
             for (int i = 0; i < totalSymptoms; i++)
@@ -367,27 +410,16 @@ public class ActiveVirusManager : MonoBehaviour
                 else preferred.Add(i);
             }
 
-            // Pick from preferred first, then fallback
+            ShuffleInPlace(preferred);
+            ShuffleInPlace(fallback);
             var combined = new List<int>(preferred);
             combined.AddRange(fallback);
 
-            // Shuffle within preferred and fallback to keep some randomness
-            ShuffleInPlace(preferred);
-            ShuffleInPlace(fallback);
-            combined = new List<int>(preferred);
-            combined.AddRange(fallback);
-
-            // Take 2 — guaranteed different from first set if there are >= 2 unused indices
             for (int i = 0; i < count && i < combined.Count; i++)
                 indices.Add(combined[i]);
-
-            // Sanity: if by chance we picked the exact same set (rare with small symptom pools),
-            // try to swap one. But with totalSymptoms == 4 and first having 2, there are exactly
-            // 2 indices in `preferred`, so this branch always picks them: guaranteed difference.
         }
         else
         {
-            // Random pick
             var pool = new List<int>();
             for (int i = 0; i < totalSymptoms; i++) pool.Add(i);
             ShuffleInPlace(pool);
@@ -428,11 +460,14 @@ public class ActiveVirusManager : MonoBehaviour
         if (!HasActiveVirus) return;
         if (npc == null) return;
 
+        bool wasExternal = activeVirus.isExternal;
         activeVirus.UnregisterInfection(npc);
 
         if (!HasActiveVirus)
         {
             Debug.Log("[Virus] The virus has gone extinct (last infected was cured by the player).");
+            if (gameStats != null) gameStats.RecordVirusExtinct(wasExternal);
+            ShowExtinctFeedback(wasExternal);
             activeVirus = null;
         }
     }
@@ -451,6 +486,14 @@ public class ActiveVirusManager : MonoBehaviour
         activeVirus.currentlyInfected.Clear();
 
         Debug.Log($"[ExternalVirus] Cure successful. {cured.Count} NPCs cured. Virus extinct.");
+
+        if (gameStats != null)
+            gameStats.RecordExternalVirusCured(cured.Count);
+
+        // Different feedback from natural extinction: player cured the unknown virus
+        if (eventFeedbackUI != null)
+            eventFeedbackUI.Show(EventFeedbackUI.FeedbackType.ExternalVirusCured);
+
         activeVirus = null;
         return cured;
     }

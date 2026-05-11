@@ -3762,7 +3762,7 @@ MonoBehaviour:
 '
   topicExternalVirus:
     topicName: Unkown Virus
-    topicBody: 'This is a special event that only happens if the player spends 10+
+    topicBody: 'This is a special event that only happens if the player spends 7+
       days without creating their own virus.
 
       The Unkown Virus can only have

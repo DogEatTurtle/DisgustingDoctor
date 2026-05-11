@@ -8,6 +8,7 @@ public class EndGameUI : MonoBehaviour
     [Header("Dependencies")]
     [SerializeField] private FPSController fpsController;
     [SerializeField] private LookInteractor lookInteractor;
+    [SerializeField] private EndGameStatsUI endGameStatsUI;
 
     [Header("UI")]
     [SerializeField] private GameObject endGamePanel;
@@ -53,6 +54,7 @@ public class EndGameUI : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     private bool isShowing;
+    private EndGameManager.EndingType currentEnding;
 
     public bool IsShowing => isShowing;
 
@@ -73,9 +75,6 @@ public class EndGameUI : MonoBehaviour
         }
     }
 
-    // Forces cursor visible every frame while the end-game is showing.
-    // This protects against other UIs that close after the ending and reset
-    // the cursor state.
     private void LateUpdate()
     {
         if (!isShowing) return;
@@ -91,6 +90,7 @@ public class EndGameUI : MonoBehaviour
         if (endGamePanel == null) return;
 
         isShowing = true;
+        currentEnding = type;
 
         endGamePanel.SetActive(true);
 
@@ -100,7 +100,6 @@ public class EndGameUI : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Pause the game (timers, animations, etc.)
         Time.timeScale = 0f;
 
         switch (type)
@@ -128,7 +127,6 @@ public class EndGameUI : MonoBehaviour
 
     private void OnMainMenuClicked()
     {
-        // Restore time before changing scene
         Time.timeScale = 1f;
 
         if (string.IsNullOrEmpty(mainMenuSceneName))
@@ -147,6 +145,12 @@ public class EndGameUI : MonoBehaviour
 
     private void OnDetailsClicked()
     {
-        Debug.Log("[EndGameUI] Details button clicked. Stats panel not implemented yet.");
+        if (endGameStatsUI == null)
+        {
+            Debug.LogWarning("[EndGameUI] EndGameStatsUI reference is missing.");
+            return;
+        }
+
+        endGameStatsUI.ShowStats(currentEnding);
     }
 }

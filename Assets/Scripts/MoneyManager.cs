@@ -39,6 +39,11 @@ public class MoneyManager : MonoBehaviour
         return true;
     }
 
+    public int GetCurrentMoney()
+    {
+        return currentMoney;
+    }
+
     private void UpdateMoneyUI()
     {
         if (moneyText != null)

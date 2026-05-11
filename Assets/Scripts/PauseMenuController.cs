@@ -61,8 +61,6 @@ public class PauseMenuController : MonoBehaviour
         if (Keyboard.current == null) return;
         if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
 
-        Debug.Log($"[Pause] ESC detected. isPaused={isPaused}, instance={GetInstanceID()}");
-
         // Don't react to ESC if the end-game screen is showing
         if (endGameUI != null && endGameUI.IsShowing) return;
 
@@ -107,7 +105,6 @@ public class PauseMenuController : MonoBehaviour
 
     private void OpenPause()
     {
-        Debug.Log($"[Pause] Opening. timeScale before: {Time.timeScale}");
         isPaused = true;
 
         if (fpsController != null) fpsController.enabled = false;
@@ -117,7 +114,6 @@ public class PauseMenuController : MonoBehaviour
         Cursor.visible = true;
 
         Time.timeScale = 0f;
-        Debug.Log($"[Pause] Opened. timeScale after: {Time.timeScale}");
 
         ShowPauseMenu();
     }

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,6 +15,7 @@ public class DiagnosisUI : MonoBehaviour
     [SerializeField] private ActiveVirusManager activeVirusManager;
     [SerializeField] private DiagnosisCounter diagnosisCounter;
     [SerializeField] private VirusLabUI virusLabUI;
+    [SerializeField] private GameStats gameStats;
 
     [Header("Gameplay UI")]
     [SerializeField] private GameObject notebookPanel;
@@ -148,6 +150,13 @@ public class DiagnosisUI : MonoBehaviour
             Debug.Log($"[Diagnosis] Recorded last disease for {patient.npcName} -> {recordedDiseaseName}");
         }
 
+        // Record stats
+        if (gameStats != null)
+        {
+            string actual = patient.currentDisease != null ? patient.currentDisease.diseaseName : "Unknown";
+            gameStats.RecordDiagnosis(patient.npcName, selectedDisease.diseaseName, correct, actual);
+        }
+
         if (correct)
         {
             patient.AdjustTrust(trustGainOnCorrect);
@@ -157,15 +166,14 @@ public class DiagnosisUI : MonoBehaviour
             if (moneyManager != null)
                 moneyManager.AddMoney(totalReward);
 
-            // Register correct diagnosis for rare upgrade unlocks
-            // (skips player virus / external virus because they're in the excluded list)
+            if (gameStats != null)
+                gameStats.RecordMoneyEarned(totalReward);
+
             if (diagnosisCounter != null && diagnosedDisease != null)
                 diagnosisCounter.RegisterCorrectDiagnosis(diagnosedDisease);
 
             if (wasExternalVirus)
             {
-                // External virus diagnosis: trust + money, but patient stays infected.
-                // Only the lab cure heals the external virus.
                 if (virusLabUI != null)
                     virusLabUI.NotifyUnknownVirusDiagnosed();
 
@@ -217,9 +225,6 @@ public class DiagnosisUI : MonoBehaviour
         if (activeVirusManager == null) return false;
         if (!activeVirusManager.HasExternalVirusActive) return false;
         if (patient == null || !patient.infectedByPlayerVirus) return false;
-
-        // The patient is infected by a virus tracked in ActiveVirusManager.
-        // If the active virus is external, this patient is infected by it.
         return true;
     }
 
@@ -227,11 +232,9 @@ public class DiagnosisUI : MonoBehaviour
     {
         int reward = rewardOnCorrectDiagnosis;
 
-        // External virus: only base reward (20 coins). The big reward comes from the cure.
         if (wasExternalVirus)
             return reward;
 
-        // Player virus: base + bonus + lethality multiplier
         if (wasPlayerVirus && activeVirusManager != null && activeVirusManager.HasActiveVirus)
         {
             int lethalityBonus = Mathf.RoundToInt(activeVirusManager.CurrentVirus.lethalityPerDay * lethalityRewardMultiplier);

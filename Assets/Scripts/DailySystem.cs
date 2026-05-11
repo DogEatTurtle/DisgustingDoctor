@@ -12,6 +12,7 @@ public class DailySystem : MonoBehaviour
     [SerializeField] private SecretaryInfo secretaryInfo;
     [SerializeField] private DayManager dayManager;
     [SerializeField] private EndGameManager endGameManager;
+    [SerializeField] private GameStats gameStats;
 
     [Header("NPCs")]
     [SerializeField] private List<NPCActor> npcs = new();
@@ -44,7 +45,6 @@ public class DailySystem : MonoBehaviour
         if (npcs.Count == 0) { Debug.LogWarning("No NPCs assigned to DailySystem."); return; }
         if (diseases.Count == 0) { Debug.LogWarning("No diseases assigned to DailySystem."); return; }
 
-        // Don't process if game already ended
         if (endGameManager != null && endGameManager.GameEnded) return;
 
         todaysPatients.Clear();
@@ -76,9 +76,13 @@ public class DailySystem : MonoBehaviour
             {
                 if (Random.value < deathChanceAfterThreeDays)
                 {
-                    Debug.Log($"{npc.npcName} died from {npc.currentDisease?.diseaseName}.");
+                    string diseaseName = npc.currentDisease != null ? npc.currentDisease.diseaseName : "an unknown illness";
+                    Debug.Log($"{npc.npcName} died from {diseaseName}.");
                     npc.Die();
                     deathsToRecord.Add(npc);
+
+                    if (gameStats != null)
+                        gameStats.RecordDeath(npc.npcName, diseaseName, CountAlive());
                 }
                 else
                 {
@@ -170,15 +174,32 @@ public class DailySystem : MonoBehaviour
             todaysPatients.Add(willingVirus[i]);
         }
 
+        // Stats: patients left untreated (sick but didn't make it to the clinic)
+        int untreatedCount = 0;
+        foreach (var npc in sickNormal)
+            if (npc != null && !npc.willVisitClinic) untreatedCount++;
+        foreach (var npc in sickVirus)
+            if (npc != null && !npc.willVisitClinic) untreatedCount++;
+
+        if (gameStats != null && untreatedCount > 0)
+            gameStats.RecordPatientUntreated(untreatedCount);
+
         Debug.Log($"[Clinic] Selected {normalsToTake} normal + {virusToTake} virus patients.");
 
         UpdateSecretary(deathsToRecord, sickNormal, sickVirus);
 
         LogDailyStatus();
 
-        // Check end-of-day conditions for game ending
         if (endGameManager != null)
             endGameManager.CheckConditionsForDay();
+    }
+
+    private int CountAlive()
+    {
+        int alive = 0;
+        foreach (var npc in npcs)
+            if (npc != null && npc.isAlive) alive++;
+        return alive;
     }
 
     private void UpdateSecretary(List<NPCActor> naturalDeathsThisTurn, List<NPCActor> sickNormal, List<NPCActor> sickVirus)
@@ -240,17 +261,26 @@ public class DailySystem : MonoBehaviour
         if (secretaryActor == null) return;
         if (secretaryActor.HasLeft) return;
 
-        int aliveCount = 0;
-        foreach (var npc in npcs)
-            if (npc != null && npc.isAlive) aliveCount++;
+        int aliveCount = CountAlive();
 
         if (secretaryActor.IsActive && aliveCount < secretaryAbandonThreshold)
         {
             secretaryActor.EnterFarewellDay();
+
+            if (gameStats != null)
+                gameStats.RecordSecretaryEnteredFarewellDay();
         }
         else if (secretaryActor.IsOnFarewellDay)
         {
+            // Will set state to AbandonedAndLeftLetter or AbandonedSilently
+            bool willLeaveLetter = !secretaryActor.HasLeft; // we'll know after Leave()
             secretaryActor.Leave();
+
+            if (gameStats != null)
+            {
+                bool leftLetter = secretaryActor.State == SecretaryActor.SecretaryState.AbandonedAndLeftLetter;
+                gameStats.RecordSecretaryLeft(leftLetter);
+            }
         }
     }
 
