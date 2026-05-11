@@ -22,6 +22,9 @@ public class LookInteractor : MonoBehaviour
     private BlackMarketVendorInteractable currentVendor;
     private BlackMarketSpreaderInteractable currentSpreader;
     private LabBenchInteractable currentLabBench;
+    private SecretaryInteractable currentSecretary;
+    private SecretaryFarewellLetterInteractable currentSecretaryLetter;
+    private VacationInteractable currentVacation;
 
     private void Start()
     {
@@ -53,6 +56,12 @@ public class LookInteractor : MonoBehaviour
                 currentSpreader.Interact();
             else if (currentLabBench != null)
                 currentLabBench.Interact();
+            else if (currentSecretary != null)
+                currentSecretary.Interact();
+            else if (currentSecretaryLetter != null)
+                currentSecretaryLetter.Interact();
+            else if (currentVacation != null)
+                currentVacation.Interact();
         }
     }
 
@@ -71,6 +80,9 @@ public class LookInteractor : MonoBehaviour
         BlackMarketVendorInteractable foundVendor = null;
         BlackMarketSpreaderInteractable foundSpreader = null;
         LabBenchInteractable foundLabBench = null;
+        SecretaryInteractable foundSecretary = null;
+        SecretaryFarewellLetterInteractable foundSecretaryLetter = null;
+        VacationInteractable foundVacation = null;
 
         if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, interactLayers))
         {
@@ -84,6 +96,9 @@ public class LookInteractor : MonoBehaviour
             foundVendor = hit.collider.GetComponentInParent<BlackMarketVendorInteractable>();
             foundSpreader = hit.collider.GetComponentInParent<BlackMarketSpreaderInteractable>();
             foundLabBench = hit.collider.GetComponentInParent<LabBenchInteractable>();
+            foundSecretary = hit.collider.GetComponentInParent<SecretaryInteractable>();
+            foundSecretaryLetter = hit.collider.GetComponentInParent<SecretaryFarewellLetterInteractable>();
+            foundVacation = hit.collider.GetComponentInParent<VacationInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -106,6 +121,9 @@ public class LookInteractor : MonoBehaviour
         currentVendor = foundVendor;
         currentSpreader = foundSpreader;
         currentLabBench = foundLabBench;
+        currentSecretary = foundSecretary;
+        currentSecretaryLetter = foundSecretaryLetter;
+        currentVacation = foundVacation;
 
         if (hoverPromptText != null)
         {
@@ -118,7 +136,10 @@ public class LookInteractor : MonoBehaviour
                 currentPatientRecordsComputer != null ||
                 currentVendor != null ||
                 currentSpreader != null ||
-                currentLabBench != null;
+                currentLabBench != null ||
+                currentSecretary != null ||
+                currentSecretaryLetter != null ||
+                currentVacation != null;
 
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
@@ -141,6 +162,9 @@ public class LookInteractor : MonoBehaviour
         currentVendor = null;
         currentSpreader = null;
         currentLabBench = null;
+        currentSecretary = null;
+        currentSecretaryLetter = null;
+        currentVacation = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);

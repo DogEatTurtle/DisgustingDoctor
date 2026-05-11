@@ -8,6 +8,10 @@ public class DailySystem : MonoBehaviour
     [SerializeField] private ExternalVirusEvent externalVirusEvent;
     [SerializeField] private VirusLabUI virusLabUI;
     [SerializeField] private BlackMarketShopManager blackMarketShop;
+    [SerializeField] private SecretaryActor secretaryActor;
+    [SerializeField] private SecretaryInfo secretaryInfo;
+    [SerializeField] private DayManager dayManager;
+    [SerializeField] private EndGameManager endGameManager;
 
     [Header("NPCs")]
     [SerializeField] private List<NPCActor> npcs = new();
@@ -21,11 +25,11 @@ public class DailySystem : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float deathChanceAfterThreeDays = 0.10f;
 
     [Header("Clinic Caps")]
-    [Tooltip("Maximum total patients in the clinic per day (chair limit).")]
     [SerializeField, Min(1)] private int maxPatientsPerDay = 5;
-
-    [Tooltip("Maximum patients with normal diseases per day. Virus-infected patients can fill the remaining slots up to maxPatientsPerDay.")]
     [SerializeField, Min(0)] private int maxNormalPatientsPerDay = 3;
+
+    [Header("Secretary")]
+    [SerializeField, Min(1)] private int secretaryAbandonThreshold = 5;
 
     [Header("Today's Patients (Read Only)")]
     [SerializeField] private List<NPCActor> todaysPatients = new();
@@ -40,21 +44,20 @@ public class DailySystem : MonoBehaviour
         if (npcs.Count == 0) { Debug.LogWarning("No NPCs assigned to DailySystem."); return; }
         if (diseases.Count == 0) { Debug.LogWarning("No diseases assigned to DailySystem."); return; }
 
+        // Don't process if game already ended
+        if (endGameManager != null && endGameManager.GameEnded) return;
+
         todaysPatients.Clear();
 
-        // Reset cure cooldown and external virus discovery flag for the new day
         if (virusLabUI != null)
             virusLabUI.OnNewDay();
 
-        // 0a) Process the active virus (lethality, propagation, extinction)
         if (activeVirusManager != null)
             activeVirusManager.ProcessDailyVirusUpdate();
 
-        // 0b) Maybe trigger an external virus event (only if no virus is active)
         if (externalVirusEvent != null)
             externalVirusEvent.TickAndMaybeTrigger();
 
-        // 1) NPCs already sick advance one day (excluding virus-infected, handled above)
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -63,7 +66,7 @@ public class DailySystem : MonoBehaviour
                 npc.AdvanceDayWithDisease();
         }
 
-        // 2) Death/spontaneous cure roll for normal diseases (after day 3).
+        var deathsToRecord = new List<NPCActor>();
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -75,6 +78,7 @@ public class DailySystem : MonoBehaviour
                 {
                     Debug.Log($"{npc.npcName} died from {npc.currentDisease?.diseaseName}.");
                     npc.Die();
+                    deathsToRecord.Add(npc);
                 }
                 else
                 {
@@ -84,7 +88,6 @@ public class DailySystem : MonoBehaviour
             }
         }
 
-        // 3) Decrement immunity for the living
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -92,7 +95,6 @@ public class DailySystem : MonoBehaviour
                 npc.daysImmune--;
         }
 
-        // 4) Assign new diseases to healthy, non-immune, non-infected NPCs
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
@@ -111,18 +113,15 @@ public class DailySystem : MonoBehaviour
             }
         }
 
-        // 5) Clear clinic flags for the living
         foreach (var npc in npcs)
         {
             if (npc == null || !npc.isAlive) continue;
             npc.willVisitClinic = false;
         }
 
-        // Refresh black market offers
         if (blackMarketShop != null)
             blackMarketShop.RefreshDailyOffers();
 
-        // 6) Collect alive sick NPCs into two pools: normal and virus
         List<NPCActor> sickNormal = new();
         List<NPCActor> sickVirus = new();
         foreach (var npc in npcs)
@@ -136,14 +135,6 @@ public class DailySystem : MonoBehaviour
                 sickNormal.Add(npc);
         }
 
-        if (sickNormal.Count == 0 && sickVirus.Count == 0)
-        {
-            Debug.Log("Nenhum NPC vivo está doente. Consultório vazio.");
-            LogDailyStatus();
-            return;
-        }
-
-        // 7) Roll which sick NPCs want to visit the clinic (each pool independently)
         List<NPCActor> willingNormal = new();
         foreach (var npc in sickNormal)
         {
@@ -160,16 +151,6 @@ public class DailySystem : MonoBehaviour
                 willingVirus.Add(npc);
         }
 
-        if (willingNormal.Count == 0 && willingVirus.Count == 0)
-        {
-            Debug.Log("Há NPCs doentes, mas nenhum quis ir ao consultório hoje.");
-            LogDailyStatus();
-            return;
-        }
-
-        // 8) Apply caps
-        // Normal patients: capped at maxNormalPatientsPerDay
-        // Virus patients: can fill the remaining slots up to maxPatientsPerDay
         ShuffleInPlace(willingNormal);
         ShuffleInPlace(willingVirus);
 
@@ -189,9 +170,88 @@ public class DailySystem : MonoBehaviour
             todaysPatients.Add(willingVirus[i]);
         }
 
-        Debug.Log($"[Clinic] Selected {normalsToTake} normal + {virusToTake} virus patients (cap: {maxNormalPatientsPerDay} normal / {maxPatientsPerDay} total).");
+        Debug.Log($"[Clinic] Selected {normalsToTake} normal + {virusToTake} virus patients.");
+
+        UpdateSecretary(deathsToRecord, sickNormal, sickVirus);
 
         LogDailyStatus();
+
+        // Check end-of-day conditions for game ending
+        if (endGameManager != null)
+            endGameManager.CheckConditionsForDay();
+    }
+
+    private void UpdateSecretary(List<NPCActor> naturalDeathsThisTurn, List<NPCActor> sickNormal, List<NPCActor> sickVirus)
+    {
+        if (secretaryInfo == null) return;
+        int currentDay = dayManager != null ? dayManager.GetCurrentDay() : 0;
+
+        foreach (var npc in naturalDeathsThisTurn)
+        {
+            if (npc != null)
+                secretaryInfo.RecordEvent(SecretaryEvent.EventType.Death, npc.npcName, currentDay);
+        }
+
+        var deathsAlreadyRecordedToday = new HashSet<string>();
+        foreach (var n in naturalDeathsThisTurn)
+            if (n != null) deathsAlreadyRecordedToday.Add(n.npcName);
+
+        foreach (var npc in npcs)
+        {
+            if (npc == null) continue;
+            if (npc.isAlive) continue;
+            if (deathsAlreadyRecordedToday.Contains(npc.npcName)) continue;
+            if (!HasDeathInBuffer(npc.npcName))
+            {
+                secretaryInfo.RecordEvent(SecretaryEvent.EventType.Death, npc.npcName, currentDay);
+                deathsAlreadyRecordedToday.Add(npc.npcName);
+            }
+        }
+
+        foreach (var npc in sickNormal)
+        {
+            if (npc != null && !npc.willVisitClinic)
+                secretaryInfo.RecordEvent(SecretaryEvent.EventType.SickNotVisiting, npc.npcName, currentDay);
+        }
+        foreach (var npc in sickVirus)
+        {
+            if (npc != null && !npc.willVisitClinic)
+                secretaryInfo.RecordEvent(SecretaryEvent.EventType.SickNotVisiting, npc.npcName, currentDay);
+        }
+
+        secretaryInfo.PruneOldEvents(currentDay);
+
+        UpdateSecretaryAbandonState();
+    }
+
+    private bool HasDeathInBuffer(string npcName)
+    {
+        if (secretaryInfo == null) return true;
+
+        int currentDay = dayManager != null ? dayManager.GetCurrentDay() : 0;
+        var allRecent = secretaryInfo.GetRecentDeaths(currentDay);
+        foreach (var e in allRecent)
+            if (e.npcName == npcName) return true;
+        return false;
+    }
+
+    private void UpdateSecretaryAbandonState()
+    {
+        if (secretaryActor == null) return;
+        if (secretaryActor.HasLeft) return;
+
+        int aliveCount = 0;
+        foreach (var npc in npcs)
+            if (npc != null && npc.isAlive) aliveCount++;
+
+        if (secretaryActor.IsActive && aliveCount < secretaryAbandonThreshold)
+        {
+            secretaryActor.EnterFarewellDay();
+        }
+        else if (secretaryActor.IsOnFarewellDay)
+        {
+            secretaryActor.Leave();
+        }
     }
 
     private void ShuffleInPlace(List<NPCActor> list)
