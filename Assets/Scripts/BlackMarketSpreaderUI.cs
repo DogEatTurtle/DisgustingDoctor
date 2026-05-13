@@ -101,11 +101,10 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         if (victimListPanel != null) victimListPanel.SetActive(false);
         if (victimDetailPanel != null) victimDetailPanel.SetActive(false);
 
+        bool canRelease = CanReleaseVirus();
         string message;
 
-        if (activeVirusManager != null && activeVirusManager.HasExternalVirusActive)
-            message = "Something is already spreading through the village. I won't make it worse. Come back when it's gone.";
-        else if (activeVirusManager != null && activeVirusManager.HasPlayerVirusActive)
+        if (activeVirusManager != null && activeVirusManager.HasActiveVirus)
             message = "There's already a virus out there. Come back when it's done.";
         else if (virusLabManager == null || !virusLabManager.CurrentBlueprint.IsComplete)
             message = "You don't have a complete virus ready. Go finish it in your lab first.";
@@ -120,6 +119,7 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         SetFeedback("");
     }
 
+    // Called by the "Pick a victim" button in the dialogue panel
     public void OnPickVictimClicked()
     {
         if (!CanReleaseVirus())
@@ -131,11 +131,13 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         ShowVictimList();
     }
 
+    // Called by the "No, I don't think I will" button in the dialogue panel
     public void OnDeclineDialogueClicked()
     {
         CloseAll();
     }
 
+    // Called by the "Back" button in the victim list panel
     public void OnBackToDialogueClicked()
     {
         selectedVictim = null;
@@ -162,8 +164,9 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         {
             if (npc == null || !npc.isAlive) continue;
 
+            // Reuse PatientRecordEntryUI but wire it to this UI instead
             PatientRecordEntryUI entry = Instantiate(victimEntryPrefab, victimListContainer);
-            entry.Setup(npc, null);
+            entry.Setup(npc, null); // null for PatientRecordsUI — we handle the click differently
             entry.SetCustomClickAction(() => OnVictimSelected(npc));
         }
     }
@@ -190,12 +193,14 @@ public class BlackMarketSpreaderUI : MonoBehaviour
         SetFeedback("");
     }
 
+    // Called by the "Back to list" button in the detail panel
     public void OnBackToListClicked()
     {
         selectedVictim = null;
         ShowVictimList();
     }
 
+    // Called by the "Infect" button in the detail panel
     public void OnInfectClicked()
     {
         if (selectedVictim == null || !selectedVictim.isAlive)
@@ -216,12 +221,16 @@ public class BlackMarketSpreaderUI : MonoBehaviour
 
         if (released)
         {
+            // Consume the blueprint upgrades (return them to the market pool later)
             virusLabManager.ConsumeBlueprint();
-            SetFeedback($"Virus released on {selectedVictim.npcName}!");
             Debug.Log($"[Spreader] Virus released on {selectedVictim.npcName}. Paid {releasePrice} coins.");
+
+            // Close the entire spreader UI immediately after a successful infection
+            CloseAll();
         }
         else
         {
+            // Refund if release failed for some reason
             moneyManager.AddMoney(releasePrice);
             SetFeedback("Something went wrong. Money refunded.");
         }

@@ -43943,6 +43943,7 @@ GameObject:
   - component: {fileID: 1518803543}
   - component: {fileID: 1518803544}
   - component: {fileID: 1518803545}
+  - component: {fileID: 1518803546}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -44252,6 +44253,22 @@ MonoBehaviour:
   introPanel: {fileID: 1352467916}
   understoodButton: {fileID: 664408499}
   closeButton: {fileID: 1091412175}
+--- !u!114 &1518803546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1518803534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 431791295ef682f4a80461e7dc32ad2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActiveVirusEntryUI
+  activeVirusManager: {fileID: 2013353026}
+  contentManager: {fileID: 492484908}
+  descriptionText: A custom virus you have released into the village. Patients infected
+    by it show a specific combination of symptoms that you designed.
 --- !u!1001 &1522018016
 PrefabInstance:
   m_ObjectHideFlags: 0
