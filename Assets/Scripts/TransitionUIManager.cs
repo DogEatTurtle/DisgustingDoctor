@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TransitionUIManager : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class TransitionUIManager : MonoBehaviour
     [SerializeField] private GameObject btnConsultorio;
     [SerializeField] private GameObject btnLaboratorio;
     [SerializeField] private GameObject btnMercadoNegro;
+
+    [Header("Cancel Button")]
+    [SerializeField] private Button cancelButton;
 
     [Header("Player")]
     [SerializeField] private Transform player;
@@ -24,6 +28,12 @@ public class TransitionUIManager : MonoBehaviour
     void Start()
     {
         CloseTransitionUI();
+
+        if (cancelButton != null)
+        {
+            cancelButton.onClick.RemoveAllListeners();
+            cancelButton.onClick.AddListener(CloseTransitionUI);
+        }
     }
 
     public void OpenTransitionUI(LocationType location)

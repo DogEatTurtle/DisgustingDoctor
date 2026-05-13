@@ -190,11 +190,17 @@ public class GameStats : MonoBehaviour
     {
         var sb = new StringBuilder();
 
+        // Capture playtime: Time.timeSinceLevelLoad respects Time.timeScale,
+        // so it does NOT count time spent in pause/end-game menus.
+        float totalSeconds = Time.timeSinceLevelLoad;
+        string playtimeFormatted = FormatPlaytime(totalSeconds);
+
         sb.AppendLine(runTitle);
-        sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine($"Generated: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
         sb.AppendLine();
         sb.AppendLine($"Ending: {EndingToReadable(ending)}");
         sb.AppendLine($"Days survived: {currentDay}");
+        sb.AppendLine($"Total playtime: {playtimeFormatted}");
         sb.AppendLine();
 
         sb.AppendLine("=== SUMMARY ===");
@@ -234,6 +240,15 @@ public class GameStats : MonoBehaviour
         return sb.ToString();
     }
 
+    private static string FormatPlaytime(float seconds)
+    {
+        int totalSeconds = Mathf.FloorToInt(seconds);
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int secs = totalSeconds % 60;
+        return $"{hours:00}:{minutes:00}:{secs:00}";
+    }
+
     private string EndingToReadable(EndGameManager.EndingType ending)
     {
         switch (ending)
@@ -249,7 +264,8 @@ public class GameStats : MonoBehaviour
     public string ExportToFile(string content)
     {
         string folder = Application.persistentDataPath;
-        string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        // Use dashes instead of slashes for the filename (slashes are not allowed in file names)
+        string timestamp = DateTime.Now.ToString("dd-MM-yyyy_HH-mm-ss");
         string filename = $"disgusting_doctor_run_{timestamp}.txt";
         string fullPath = Path.Combine(folder, filename);
 
