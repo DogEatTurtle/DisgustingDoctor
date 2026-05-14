@@ -27,9 +27,11 @@ public class ActiveVirusEntryUI : MonoBehaviour
 
         if (shouldShow != lastActiveState)
         {
+            Debug.Log($"[ActiveVirusEntry] State changed. shouldShow={shouldShow}");
             if (shouldShow)
             {
                 AddOrRefreshEntry();
+                Debug.Log("[ActiveVirusEntry] Entry added.");
             }
             else
             {
@@ -40,7 +42,6 @@ public class ActiveVirusEntryUI : MonoBehaviour
         }
         else if (shouldShow)
         {
-            // Already showing — refresh if a new virus has been released since last check
             if (HasSourceUpgradesChanged())
                 AddOrRefreshEntry();
         }

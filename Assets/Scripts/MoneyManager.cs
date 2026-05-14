@@ -6,6 +6,10 @@ public class MoneyManager : MonoBehaviour
     [SerializeField] private TMP_Text moneyText;
     [SerializeField] private int currentMoney = 0;
 
+    [Header("Spend Sound")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip spendSfx;
+
     public int CurrentMoney => currentMoney;
 
     private void Start()
@@ -36,6 +40,11 @@ public class MoneyManager : MonoBehaviour
         currentMoney -= amount;
         UpdateMoneyUI();
         Debug.Log($"Money spent: {amount} | Total money: {currentMoney}");
+
+        // Play the purchase sound on any successful spend
+        if (audioSource != null && spendSfx != null)
+            audioSource.PlayOneShot(spendSfx);
+
         return true;
     }
 

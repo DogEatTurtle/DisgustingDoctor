@@ -25,6 +25,7 @@ public class LookInteractor : MonoBehaviour
     private SecretaryInteractable currentSecretary;
     private SecretaryFarewellLetterInteractable currentSecretaryLetter;
     private VacationInteractable currentVacation;
+    private JukeboxInteractable currentJukebox;
 
     private void Start()
     {
@@ -62,6 +63,8 @@ public class LookInteractor : MonoBehaviour
                 currentSecretaryLetter.Interact();
             else if (currentVacation != null)
                 currentVacation.Interact();
+            else if (currentJukebox != null)
+                currentJukebox.Interact();
         }
     }
 
@@ -83,6 +86,7 @@ public class LookInteractor : MonoBehaviour
         SecretaryInteractable foundSecretary = null;
         SecretaryFarewellLetterInteractable foundSecretaryLetter = null;
         VacationInteractable foundVacation = null;
+        JukeboxInteractable foundJukebox = null;
 
         if (Physics.Raycast(origin, direction, out RaycastHit hit, maxDistance, interactLayers))
         {
@@ -99,6 +103,7 @@ public class LookInteractor : MonoBehaviour
             foundSecretary = hit.collider.GetComponentInParent<SecretaryInteractable>();
             foundSecretaryLetter = hit.collider.GetComponentInParent<SecretaryFarewellLetterInteractable>();
             foundVacation = hit.collider.GetComponentInParent<VacationInteractable>();
+            foundJukebox = hit.collider.GetComponentInParent<JukeboxInteractable>();
         }
 
         if (foundHighlight != currentHighlightable)
@@ -124,6 +129,7 @@ public class LookInteractor : MonoBehaviour
         currentSecretary = foundSecretary;
         currentSecretaryLetter = foundSecretaryLetter;
         currentVacation = foundVacation;
+        currentJukebox = foundJukebox;
 
         if (hoverPromptText != null)
         {
@@ -139,7 +145,8 @@ public class LookInteractor : MonoBehaviour
                 currentLabBench != null ||
                 currentSecretary != null ||
                 currentSecretaryLetter != null ||
-                currentVacation != null;
+                currentVacation != null ||
+                currentJukebox != null;
 
             hoverPromptText.gameObject.SetActive(canShowPrompt);
         }
@@ -165,6 +172,7 @@ public class LookInteractor : MonoBehaviour
         currentSecretary = null;
         currentSecretaryLetter = null;
         currentVacation = null;
+        currentJukebox = null;
 
         if (hoverPromptText != null)
             hoverPromptText.gameObject.SetActive(false);
